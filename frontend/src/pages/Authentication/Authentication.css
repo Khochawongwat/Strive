@@ -1,0 +1,13 @@
+body {
+    overflow: hidden;
+}
+
+.authentication-container {
+    transition: opacity 0.33s ease-in-out, transform 0.33s ease-in-out;
+    height: auto;
+}
+
+.hidden {
+    opacity: 0;
+    transform: translateX(90%) scale(0.9);
+}
