@@ -1,38 +1,66 @@
 import { ThemeProvider } from "@emotion/react"
-import { Box, Typography, TextField, FormControlLabel, Checkbox, Button } from "@mui/material"
+import { Box, Typography, FormControlLabel, Checkbox, Button, CircularProgress } from "@mui/material"
 import defaultTheme from "../../theme"
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";
+import StyledTextField from "../../components/commons/TextFields/StyledTextField";
+import { CheckCircleOutline, ConfirmationNumberOutlined, EmailOutlined, PasswordOutlined } from "@mui/icons-material";
+import { signUpWithEmail } from "../../services/auth.service";
+import { useState } from "react";
+import { green } from "@mui/material/colors";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
     toggleAuthenticationMode: () => void
 }
 
 const validationSchema = Yup.object({
-    email: Yup.string().email('Invalid email address').required('Required'),
-    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
+    email: Yup.string().email('Invalid email address').required('Email address is required'),
+    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
     confirmPassword: Yup.string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
-        .required('Required'),
+        .required('Password confirmation is required'),
 });
 
 const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const navigate = useNavigate()
+
     const formik = useFormik({
         initialValues: {
             email: '',
             password: '',
             confirmPassword: '',
+            rememberMe: true,
         },
         validationSchema: validationSchema,
-        onSubmit: (values) => {
-            console.log(values);
+        onSubmit: async (values) => {
+            if (!loading && !success) {
+                setSuccess(false);
+                setLoading(true);
+                try {
+                    await signUpWithEmail(values)
+                        .then(() => {
+                            setSuccess(true)
+                            setTimeout(() => {
+                                navigate('/')
+                            }, 1000)
+                        })
+                } catch (error: any) {
+                    console.error("Form submission error:", error.message);
+                }
+                setLoading(false)
+            }
+
         },
     });
+
     return (
         <ThemeProvider theme={defaultTheme}>
             <AuthPageLayout>
-                <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{
+                <Box sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     width: '100%',
@@ -47,46 +75,19 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                     </Box>
                     <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
                         <>
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="email-signup"
-                                label="Email Address"
-                                autoComplete="email"
-                                variant="outlined"
-                                {...formik.getFieldProps('email')}
-                                error={formik.touched.email && Boolean(formik.errors.email)}
-                                helperText={formik.touched.email && formik.errors.email}
-                            />
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                type="password"
-                                id="password-signup"
-                                label="Password"
-                                autoComplete="password"
-                                variant="outlined"
-                                {...formik.getFieldProps('password')}
-                                error={formik.touched.password && Boolean(formik.errors.password)}
-                                helperText={formik.touched.password && formik.errors.password}
-                            />
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                type="password"
-                                id="confirmPassword"
-                                label="Confirm Password"
-                                autoComplete="new-password"
-                                variant="outlined"
-                                {...formik.getFieldProps('confirmPassword')}
-                                error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                                helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                            />
+                            {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
+                            {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
+                            {StyledTextField(formik, 'confirmPassword', 'Confirm your password here...', 'password', <ConfirmationNumberOutlined />)}
                             <FormControlLabel
-                                control={<Checkbox value="remember" color="primary" />}
+                                sx = {{
+                                    mb: 2
+                                }}
+                                control={
+                                    <Checkbox
+                                        checked={formik.values.rememberMe}
+                                        onChange={formik.handleChange('rememberMe')}
+                                        color="primary" />
+                                }
                                 label="Remember me"
                             />
                         </>
@@ -99,13 +100,48 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                             <Button
                                 type="submit"
                                 fullWidth
-                                disabled={Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0}
+                                disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
                                 variant="outlined"
                                 sx={{
-                                    my: 3,
+                                    ...(success && {
+                                        bgcolor: green[500],
+                                        '&:hover': {
+                                            bgcolor: green[700],
+                                        },
+                                    }),
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    transition: 'background-color 0.3s ease',
                                 }}
                             >
-                                Create new account
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        transition: 'opacity 0.3s ease',
+                                    }}
+                                >
+                                    {loading && (
+                                        <CircularProgress
+                                            size={24}
+                                            sx={{
+                                                color: green,
+                                                top: '50%',
+                                                left: '50%',
+                                                opacity: success ? 0 : 1,
+                                            }}
+                                        />
+                                    )}
+                                    {!loading && (
+                                        success ? (
+                                            <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
+                                        ) : (
+                                            <Typography>Create an account</Typography>
+                                        )
+                                    )}
+                                </Box>
                             </Button>
                             <Box
                                 sx={{

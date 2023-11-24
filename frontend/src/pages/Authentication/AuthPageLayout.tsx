@@ -14,6 +14,7 @@ const AuthPageLayout: React.FC<Props> = ({ children }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            userSelect: 'none',
         }}>
             <CssBaseline />
             <Grid item sx={{ p: '8%', height: '90%', width: '95vw' }}>

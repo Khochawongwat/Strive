@@ -4,6 +4,12 @@ import DashboardPage from './pages/Dashboard';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import defaultTheme from './theme';
+import { getApp, initializeApp } from 'firebase/app';
+import { firebaseConfig } from './configs/firebase.config';
+import { initializeAuth } from 'firebase/auth';
+
+initializeApp(firebaseConfig)
+initializeAuth(getApp())
 
 function App() {
   return (

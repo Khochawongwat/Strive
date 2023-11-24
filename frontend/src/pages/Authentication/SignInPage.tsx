@@ -1,34 +1,62 @@
 import { ThemeProvider } from "@emotion/react"
-import { Box, Typography, TextField, Button, Checkbox, FormControlLabel } from "@mui/material"
+import { Box, Typography, Button, Checkbox, FormControlLabel, CircularProgress } from "@mui/material"
 import defaultTheme from "../../theme"
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";
+import { CheckCircleOutline, EmailOutlined, PasswordOutlined } from "@mui/icons-material";
+import StyledTextField from "../../components/commons/TextFields/StyledTextField";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { signInWithEmail } from "../../services/auth.service";
+import { green } from "@mui/material/colors";
 
 interface Props {
     toggleAuthenticationMode: () => void
 }
 
 const validationSchema = Yup.object({
-    email: Yup.string().email('Invalid email address').required('Required'),
-    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
+    email: Yup.string().email('Invalid email address').required('Email address is required'),
+    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
 });
 
 const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+
+    const navigate = useNavigate()
+
     const formik = useFormik({
         initialValues: {
             email: '',
             password: '',
+            rememberMe: true,
         },
         validationSchema: validationSchema,
-        onSubmit: (values) => {
-            console.log(values);
+        onSubmit: async (values) => {
+            if (!loading && !success) {
+                setSuccess(false);
+                setLoading(true);
+                try {
+                    await signInWithEmail(values)
+                        .then(() => {
+                            setSuccess(true)
+                            setTimeout(() => {
+                                navigate('/')
+                            }, 1000)
+                        })
+                } catch (error: any) {
+                    console.error("Form submission error:", error.message);
+                }
+                setLoading(false)
+            }
+
         },
     });
     return (
         <ThemeProvider theme={defaultTheme}>
             <AuthPageLayout>
-                <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{
+                <Box sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     width: '100%',
@@ -42,33 +70,19 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                         </Typography>
                     </Box>
                     <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="email-signin"
-                            label="Email Address"
-                            autoComplete="email"
-                            variant="outlined"
-                            {...formik.getFieldProps('email')}
-                            error={formik.touched.email && Boolean(formik.errors.email)}
-                            helperText={formik.touched.email && formik.errors.email}
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            type="password"
-                            id="password-signin"
-                            label="Password"
-                            autoComplete="password"
-                            variant="outlined"
-                            {...formik.getFieldProps('password')}
-                            error={formik.touched.password && Boolean(formik.errors.password)}
-                            helperText={formik.touched.password && formik.errors.password}
-                        />
+                        {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
+
+                        {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
                         <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" />}
+                            sx={{
+                                mb: 2
+                            }}
+                            control={
+                                <Checkbox
+                                    checked={formik.values.rememberMe}
+                                    onChange={formik.handleChange('rememberMe')}
+                                    color="primary" />
+                            }
                             label="Remember me"
                         />
                         <Box
@@ -80,13 +94,48 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                             <Button
                                 type="submit"
                                 fullWidth
-                                disabled={Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0}
+                                disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
                                 variant="outlined"
                                 sx={{
-                                    my: 3,
+                                    ...(success && {
+                                        bgcolor: green[500],
+                                        '&:hover': {
+                                            bgcolor: green[700],
+                                        },
+                                    }),
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    transition: 'background-color 0.3s ease',
                                 }}
                             >
-                                Continue with email
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        transition: 'opacity 0.3s ease',
+                                    }}
+                                >
+                                    {loading && (
+                                        <CircularProgress
+                                            size={24}
+                                            sx={{
+                                                color: green,
+                                                top: '50%',
+                                                left: '50%',
+                                                opacity: success ? 0 : 1,
+                                            }}
+                                        />
+                                    )}
+                                    {!loading && (
+                                        success ? (
+                                            <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
+                                        ) : (
+                                            <Typography>Continue with email</Typography>
+                                        )
+                                    )}
+                                </Box>
                             </Button>
                             <Box
                                 sx={{
