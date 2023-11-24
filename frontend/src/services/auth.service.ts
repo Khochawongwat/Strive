@@ -1,8 +1,13 @@
-import { User, signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "@firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "@firebase/auth";
 import { getApp } from "firebase/app";
+import { UserCredential, } from "firebase/auth";
 import { FormikValues } from "formik";
+import { matchAuthErrorCode } from "../utils/ErrorHandler";
+import axios from "axios";
 
-export async function signUpWithEmail(formik: FormikValues): Promise<User> {
+axios.defaults.withCredentials = true
+
+export async function signUpWithEmail(formik: FormikValues): Promise<UserCredential> {
   const { email, password } = formik;
   const auth = getAuth(getApp())
 
@@ -30,30 +35,19 @@ export async function signUpWithEmail(formik: FormikValues): Promise<User> {
   }
 }
 
-export async function signInWithEmail(formik: FormikValues): Promise<User> {
-  const { email, password, rememberMe } = formik;
-  const auth = getAuth(getApp())
+export async function signInWithEmail(formik: FormikValues): Promise<UserCredential> {
+  const { email, password} = formik;
+  const auth = getAuth(getApp());
 
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    if (rememberMe) {
-      localStorage.setItem("user", JSON.stringify(userCredential.user));
-    }
-    return userCredential.user;
+    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential;
   } catch (error: any) {
-    let errorMessage = "Sign-in failed";
-
-    if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
-      errorMessage = "Invalid email or password. Please check your credentials and try again.";
-    } else if (error.code === "auth/invalid-email") {
-      errorMessage = "The email address is not valid.";
-    }
-
-    console.error("Sign-in error:", errorMessage);
-    throw new Error(errorMessage);
+    console.error("Sign-in error:", matchAuthErrorCode(error));
+    throw new Error(matchAuthErrorCode(error) as string);
   }
 }

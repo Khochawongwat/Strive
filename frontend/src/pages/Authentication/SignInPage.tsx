@@ -10,9 +10,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { signInWithEmail } from "../../services/auth.service";
 import { green } from "@mui/material/colors";
+import axios from 'axios';
 
 interface Props {
     toggleAuthenticationMode: () => void
+    notify: (message: String) => void
 }
 
 const validationSchema = Yup.object({
@@ -20,7 +22,7 @@ const validationSchema = Yup.object({
     password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
 });
 
-const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
+const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
 
@@ -28,8 +30,8 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
 
     const formik = useFormik({
         initialValues: {
-            email: '',
-            password: '',
+            email: 'tawan11180@gmail.com',
+            password: 'Key08930',
             rememberMe: true,
         },
         validationSchema: validationSchema,
@@ -39,20 +41,28 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                 setLoading(true);
                 try {
                     await signInWithEmail(values)
-                        .then(() => {
+                        .then((userCredential) => {
                             setSuccess(true)
-                            setTimeout(() => {
+                            notify("Welcome back achiever! You'll be redirected shortly to our dashboard.")
+                            setTimeout(async () => {
+                                if (values.rememberMe) {
+                                    const idToken = await userCredential.user.getIdToken();
+                                    await axios.post("http://localhost:3000/auth/sessionLogin", {
+                                        idToken
+                                    })
+                                }
                                 navigate('/')
-                            }, 1000)
+                            }, 2000)
                         })
                 } catch (error: any) {
                     console.error("Form submission error:", error.message);
+                    notify("Error: " + error.message)
                 }
                 setLoading(false)
             }
-
         },
     });
+
     return (
         <ThemeProvider theme={defaultTheme}>
             <AuthPageLayout>
@@ -61,6 +71,12 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                     flexDirection: 'column',
                     width: '100%',
                 }}>
+                    <Button onClick={async () => {
+                        const session = await axios.get("http://localhost:3000/auth/retrieveSession")
+                        console.log(session)
+                    }}>
+                        Fetch Cookie
+                    </Button>
                     <Box>
                         <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
                             Welcome, Achiever

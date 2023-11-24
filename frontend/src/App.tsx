@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Authentication from './pages/Authentication/Authentication';
 import DashboardPage from './pages/Dashboard';
 import { ThemeProvider } from '@mui/material/styles';
@@ -18,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/auth" element={<Authentication />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </ThemeProvider>
   );

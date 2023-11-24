@@ -10,9 +10,11 @@ import { signUpWithEmail } from "../../services/auth.service";
 import { useState } from "react";
 import { green } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface Props {
     toggleAuthenticationMode: () => void
+    notify: (message: String) => void
 }
 
 const validationSchema = Yup.object({
@@ -23,7 +25,7 @@ const validationSchema = Yup.object({
         .required('Password confirmation is required'),
 });
 
-const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
+const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const navigate = useNavigate()
@@ -42,14 +44,22 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                 setLoading(true);
                 try {
                     await signUpWithEmail(values)
-                        .then(() => {
+                        .then((userCredential) => {
                             setSuccess(true)
-                            setTimeout(() => {
+                            notify("Your account has been successfully created. We're excited to have you on board. You'll be redirected shortly to our dashboard.")
+                            setTimeout(async () => {
+                                if (values.rememberMe) {
+                                    const idToken = await userCredential.user.getIdToken();
+                                    await axios.post("http://localhost:3000/auth/sessionLogin", {
+                                        idToken
+                                    })
+                                }
                                 navigate('/')
-                            }, 1000)
+                            }, 2000)
                         })
                 } catch (error: any) {
-                    console.error("Form submission error:", error.message);
+                    console.error("Form submission error:", error.message)
+                    notify("Error: " + error.message)
                 }
                 setLoading(false)
             }
@@ -79,7 +89,7 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode }) => {
                             {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
                             {StyledTextField(formik, 'confirmPassword', 'Confirm your password here...', 'password', <ConfirmationNumberOutlined />)}
                             <FormControlLabel
-                                sx = {{
+                                sx={{
                                     mb: 2
                                 }}
                                 control={
