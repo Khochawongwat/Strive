@@ -51,7 +51,6 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                                         idToken
                                     })
                                 }
-                                navigate('/')
                             }, 2000)
                         })
                 } catch (error: any) {

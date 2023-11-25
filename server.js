@@ -47,27 +47,63 @@ app.post('/auth/sessionLogin', (req, res) => {
             sameSite: 'Strict',
         };
         res.cookie('session', idToken, options);
+        console.log(`New token created`)
         res.status(200).json({ status: 'success' });
     } catch (error) {
+        console.error('Error during session login:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-app.get('/auth/retrieveSession', (req, res) => {
+app.get('/auth/sessionLogin', (req, res) => {
     try {
         const sessionCookie = req.cookies.session;
-        const decodedToken = jwt.decode(sessionCookie);
 
         if (!sessionCookie) {
             return res.status(401).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        if (decodedToken.exp * 1000 < Date.now()) {
-            return res.status(401).json({ status: 'error', message: 'Session expired' });
+        const decodedToken = jwt.decode(sessionCookie);
+
+        if (!decodedToken) {
+            return res.status(500).json({ status: 'error', message: 'Error decoding token' });
         }
 
-        res.status(200).json({ status: 'success', session: sessionCookie });
+        console.log(`Token Expires in: ${(decodedToken.exp * 1000 - Date.now()) / 1000}s`);
+
+        if (decodedToken.exp * 1000 < Date.now()) {
+            return res.status(410).json({ status: 'error', message: 'Session expired' });
+        }
+
+        res.status(200).json({ status: 'success', expired: decodedToken.exp * 1000 < Date.now() });
     } catch (error) {
-        res.status(500).send('Internal Server Error');
+        console.error('Error handling session login:', error);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 });
+
+
+app.get('/auth/retrieveSession', async (req, res) => {
+    try {
+        const sessionCookie = req.cookies.session;
+
+        if (!sessionCookie) {
+            return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        }
+
+        const decodedToken = jwt.decode(sessionCookie);
+        console.log(`Token Expires in: ${(decodedToken.exp * 1000 - Date.now()) / 1000}s`)
+
+        if (decodedToken.exp * 1000 < Date.now()) {
+            res.clearCookie('session');
+            console.log(`Token expired. Will be cleared.`)
+            return res.status(410).json({ status: 'error', message: 'Session expired' });
+        }
+
+        return res.status(200).json({ status: 'success', session: sessionCookie });
+    } catch (error) {
+        console.error('Error retrieving session:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+});
+

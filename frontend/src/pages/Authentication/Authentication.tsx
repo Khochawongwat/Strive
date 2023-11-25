@@ -6,6 +6,7 @@ import "./Authentication.css";
 import { Alert, Box, Snackbar, SnackbarOrigin } from "@mui/material";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
+import { matchAPIErrorCode } from "../../utils/ErrorHandler";
 interface State extends SnackbarOrigin {
     open: boolean
     message: String
@@ -47,17 +48,13 @@ const Authentication: React.FC = () => {
                 const session = response.data.session
                 setSession(session)
             } catch (error: any) {
-                handleOpen(error.message)
-                console.error('Error retrieving session:', error.message);
+                handleOpen(matchAPIErrorCode(error))
+                console.error('Error retrieving session:', matchAPIErrorCode(error));
             }
         };
 
         fetchSession();
     }, []);
-
-    if(session){
-        return <Navigate to = "/"/>
-    }
     
     return (
         <Box className={`authentication-container ${isTransitioning ? "hidden" : ""}`}>

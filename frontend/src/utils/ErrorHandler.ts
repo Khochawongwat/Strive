@@ -72,7 +72,7 @@ export function matchAuthErrorCode(error: any): String {
         case "auth/invalid-login-credentials":
             errorMessage = "Invalid email or password. Please check your credentials and try again.";
             break;
-            
+
         case "auth/too-many-requests":
             errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.";
             break;
@@ -94,4 +94,32 @@ export function matchAuthErrorCode(error: any): String {
             break;
     }
     return errorMessage
+}
+
+export function matchAPIErrorCode(error: any): String {
+    const code = error.response.status.toString();
+    let errorMessage;
+
+    switch (code) {
+        case "401":
+            errorMessage = "Unauthorized access. Please check your credentials.";
+            break;
+        case "500":
+            errorMessage = "Internal server error. Please try again later.";
+            break;
+        case "404":
+            errorMessage = "Resource not found. Please check the URL.";
+            break;
+        case "403":
+            errorMessage = "Forbidden. You don't have permission to access this resource.";
+            break;
+        case "410":
+            errorMessage = "Session expired. Please login again."
+            break;
+        default:
+            errorMessage = "An unknown error has occurred. Please try again";
+            break;
+    }
+
+    return "Error: " + errorMessage;
 }
