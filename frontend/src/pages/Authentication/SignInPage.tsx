@@ -30,8 +30,8 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
 
     const formik = useFormik({
         initialValues: {
-            email: 'tawan11180@gmail.com',
-            password: 'Key08930',
+            email: '',
+            password: '',
             rememberMe: true,
         },
         validationSchema: validationSchema,
@@ -40,24 +40,27 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                 setSuccess(false);
                 setLoading(true);
                 try {
-                    await signInWithEmail(values)
-                        .then((userCredential) => {
-                            setSuccess(true)
-                            notify("Welcome back achiever! You'll be redirected shortly to our dashboard.")
-                            setTimeout(async () => {
-                                if (values.rememberMe) {
-                                    const idToken = await userCredential.user.getIdToken();
-                                    await axios.post("http://localhost:3000/auth/sessionLogin", {
-                                        idToken
-                                    })
-                                }
-                            }, 2000)
-                        })
+                    const userCredential = await signInWithEmail(values);
+                    if (values.rememberMe) {
+                        const idToken = await userCredential.user.getIdToken();
+                        await axios.post("http://localhost:3000/auth/sessionLogin", {
+                            idToken
+                        });
+                        console.log('Session Cookie Set');
+                    }
+                    notify("Welcome back achiever! You'll be redirected shortly to our dashboard.");
+                    setLoading(false);
+                    setSuccess(true);
+
+                    setTimeout(async () => {
+                        navigate('/')
+                    }, 2000);
+                    
                 } catch (error: any) {
                     console.error("Form submission error:", error.message);
-                    notify("Error: " + error.message)
+                    setLoading(false);
+                    notify("Error: " + error.message);
                 }
-                setLoading(false)
             }
         },
     });

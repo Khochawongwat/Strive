@@ -1,26 +1,87 @@
-import { MenuOutlined } from "@mui/icons-material";
-import { Box, Toolbar, IconButton, Typography, Button, AppBar } from "@mui/material";
+import { Box, Toolbar, IconButton, Typography, AppBar, Badge } from "@mui/material";
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import MoreIcon from '@mui/icons-material/MoreVert';
+import { AccountCircle, TimerOutlined, WaterDropOutlined } from "@mui/icons-material";
+interface Props {
 
-export default function NavAppBar() {
-    return (
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
+}
+
+const NavAppBar: React.FC<Props> = ({ }) => {
+  return (
+    <Box sx={{ flexGrow: 1, userSelect: 'none', bgcolor: 'transparent'}}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div">
+            Strive
+          </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: { xs: 'none', md: 'flex'}}}>
+
+            <IconButton size="large" aria-label="show 4 new mails" color="inherit" sx={{
+              borderRadius: 1,
+            }}>
+              <Badge badgeContent={1} color="primary">
+                <TimerOutlined />
+              </Badge>
+            </IconButton>
+          </Box>
+          <Box sx={{ display: { xs: 'none', md: 'flex'}}}>
             <IconButton
               size="large"
-              edge="start"
+              aria-label="show 17 new notifications"
               color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
+              sx={{
+                borderRadius: 1,
+                display: 'flex',
+                gap: '.2rem',
+                width: '4rem',
+                fontSize: '15px',
+              }}
             >
-            <MenuOutlined/>
+              <WaterDropOutlined />
+              {0}
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              News
-            </Typography>
-            <Button color="inherit">Login</Button>
-          </Toolbar>
-        </AppBar>
-      </Box>
-    );
-  }
+            <IconButton
+              size="large"
+              aria-label="show 17 new notifications"
+              color="inherit"
+              sx={{
+                borderRadius: 1,
+              }}
+            >
+              <Badge badgeContent={0} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <IconButton
+              size="large"
+              edge="end"
+              aria-label="account of current user"
+              aria-haspopup="true"
+              color="inherit"
+              sx={{
+                borderRadius: 1,
+              }}
+            >
+              <AccountCircle />
+            </IconButton>
+          </Box>
+          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="show more"
+              aria-haspopup="true"
+              color="inherit"
+              sx={{
+                borderRadius: 1,
+              }}
+            >
+              <MoreIcon />
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </AppBar>
+    </Box>
+  );
+}
+export default NavAppBar

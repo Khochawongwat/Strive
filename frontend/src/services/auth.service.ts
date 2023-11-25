@@ -1,22 +1,21 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "@firebase/auth";
-import { getApp } from "firebase/app";
 import { UserCredential, } from "firebase/auth";
 import { FormikValues } from "formik";
 import { matchAuthErrorCode } from "../utils/ErrorHandler";
 import axios from "axios";
+import { firebaseApp } from "../apps/firebase.app";
 
 axios.defaults.withCredentials = true
 
 export async function signUpWithEmail(formik: FormikValues): Promise<UserCredential> {
   const { email, password } = formik;
-  const auth = getAuth(getApp())
 
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
 
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    await createUserWithEmailAndPassword(firebaseAuth, email, password);
     const user = await signInWithEmail(formik);
     return user;
   } catch (error: any) {
@@ -37,17 +36,19 @@ export async function signUpWithEmail(formik: FormikValues): Promise<UserCredent
 
 export async function signInWithEmail(formik: FormikValues): Promise<UserCredential> {
   const { email, password} = formik;
-  const auth = getAuth(getApp());
 
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
 
   try {
-    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential: UserCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+    console.log(userCredential)
     return userCredential;
   } catch (error: any) {
     console.error("Sign-in error:", matchAuthErrorCode(error));
     throw new Error(matchAuthErrorCode(error) as string);
   }
 }
+
+export const firebaseAuth = getAuth(firebaseApp)

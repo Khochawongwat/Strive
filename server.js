@@ -36,12 +36,21 @@ app.use((req, res, next) => {
     next();
 });
 
+app.post('/auth/logout', (req, res) => {
+    try {
+        res.clearCookie('session');
+        const sessionCookie = req.cookies.session;
+        res.status(200).json({ status: 'success', session: sessionCookie});
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.post('/auth/sessionLogin', (req, res) => {
     try {
-        const expiresIn = 60 * 60 * 24 * 1000 * 5;
         const idToken = req.body.idToken.toString();
         const options = {
-            maxAge: expiresIn,
             httpOnly: true,
             secure: true,
             sameSite: 'Strict',
@@ -75,7 +84,7 @@ app.get('/auth/sessionLogin', (req, res) => {
             return res.status(410).json({ status: 'error', message: 'Session expired' });
         }
 
-        res.status(200).json({ status: 'success', expired: decodedToken.exp * 1000 < Date.now() });
+        res.status(200).json({ status: 'success', expired: decodedToken.exp * 1000 < Date.now(), token: sessionCookie});
     } catch (error) {
         console.error('Error handling session login:', error);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });

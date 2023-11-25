@@ -6,7 +6,7 @@ import "./Authentication.css";
 import { Alert, Box, Snackbar, SnackbarOrigin } from "@mui/material";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
-import { matchAPIErrorCode } from "../../utils/ErrorHandler";
+
 interface State extends SnackbarOrigin {
     open: boolean
     message: String
@@ -24,6 +24,9 @@ const Authentication: React.FC = () => {
     )
     const {vertical, horizontal, open, message} = snackState
     const [session, setSession] = useState(null);
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+
 
     const handleOpen = (message: String) => {
         setSnackState({...snackState, open: true, message: message})
@@ -43,19 +46,30 @@ const Authentication: React.FC = () => {
 
     useEffect(() => {
         const fetchSession = async () => {
-            try {
-                const response = await axios.get("http://localhost:3000/auth/retrieveSession")
-                const session = response.data.session
-                setSession(session)
-            } catch (error: any) {
-                handleOpen(matchAPIErrorCode(error))
-                console.error('Error retrieving session:', matchAPIErrorCode(error));
+            if (!loading) {
+                setLoading(true)
+                try {
+                    const response = await axios.get("http://localhost:3000/auth/retrieveSession")
+                    const session = response.data.session;
+                    if (session) {
+                        console.log("Session found. Navigating to Dashboard.")
+                        setSession(session);
+                    }
+                } catch (error: any) {
+                    console.error('Error retrieving session:', error.message);
+                }
+                setSuccess(true)
+                setLoading(false)
             }
         };
 
         fetchSession();
     }, []);
-    
+
+    if (session && !loading && success) {
+        return <Navigate to="/" />
+    }
+
     return (
         <Box className={`authentication-container ${isTransitioning ? "hidden" : ""}`}>
             <Snackbar
