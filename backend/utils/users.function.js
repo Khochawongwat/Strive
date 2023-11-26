@@ -1,11 +1,11 @@
 const { ObjectId } = require('mongodb');
-const { DATABASE_NAME } = require("../../strive/server.config")
-const {client} = require("./general.function")
+const { DATABASE_NAME } = require("../config/server.config")
+const {client} = require("../utils/general.function")
 
 async function fetchUserById(userId) {
     try {
         const database = client.db(DATABASE_NAME);
-        const collection = database.collection('users');
+        const collection = database.collection('Users');
 
         const user = await collection.findOne({ _id: ObjectId(userId) });
         return user;
@@ -18,10 +18,10 @@ async function fetchUserById(userId) {
 async function createUser(userData) {
     try {
         const database = client.db(DATABASE_NAME);
-        const collection = database.collection('users');
-
+        const collection = database.collection('Users');
         const result = await collection.insertOne(userData);
-        return result.ops[0];
+        console.log(result)
+        return result;
     } catch (error) {
         console.error('Error creating user in MongoDB:', error);
         throw error;
@@ -31,7 +31,7 @@ async function createUser(userData) {
 async function updateUser(userId, updatedUserData) {
     try {
         const database = client.db(DATABASE_NAME);
-        const collection = database.collection('users');
+        const collection = database.collection('Users');
 
         const result = await collection.findOneAndUpdate(
             { _id: ObjectId(userId) },
@@ -49,7 +49,7 @@ async function updateUser(userId, updatedUserData) {
 async function deleteUser(userId) {
     try {
         const database = client.db(DATABASE_NAME);
-        const collection = database.collection('users');
+        const collection = database.collection('Users');
 
         const result = await collection.findOneAndDelete({ _id: ObjectId(userId) });
 

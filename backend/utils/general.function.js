@@ -1,16 +1,34 @@
 const { MongoClient} = require('mongodb');
+const {MONGO_URI, MONGO_OPTIONS, DATABASE_NAME} = require("../config/server.config")
 
 const client = new MongoClient(MONGO_URI, MONGO_OPTIONS);
 
 async function connectToMongoDB() {
-  try {
-    await client.connect();
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    throw error;
+  const maxAttempts = 5;
+  let currentAttempt = 0;
+  
+  while (currentAttempt < maxAttempts) {
+    try {
+      console.log("Attempting to connect to MongoDB..")
+      await client.connect();
+      console.log('Connected to MongoDB..');
+      break;
+    } catch (error) {
+      currentAttempt++;
+      console.error(`Error connecting to MongoDB (Attempt ${currentAttempt}):`, error);
+
+      const delay = 5000;
+      console.log(`Retrying connection in ${delay / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  if (currentAttempt === maxAttempts) {
+    console.error(`Failed to connect to MongoDB after ${maxAttempts} attempts.`);
+    throw new Error('Failed to connect to MongoDB');
   }
 }
+
 
 async function closeMongoDBConnection() {
   try {

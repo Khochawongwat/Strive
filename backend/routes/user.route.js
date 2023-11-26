@@ -1,12 +1,12 @@
 const express = require('express');
-const router = express.Router();
+const userRouter = express.Router();
 
-const { fetchDataFromMongoDB } = require("../strive/mongo/general.function"); 
-const { fetchUserById, createUser, updateUser, deleteUser } = require("../strive/mongo/users.function")
+const { fetchDataFromMongoDB } = require("../utils/general.function")
+const { fetchUserById, createUser, updateUser, deleteUser } = require("../utils/users.function")
 
-router.get('/users', async (req, res) => {
+userRouter.get('/users', async (req, res) => {
   try {
-    const users = await fetchDataFromMongoDB("users");
+    const users = await fetchDataFromMongoDB("Users");
     res.json(users)
   } catch (error) {
     console.error('Error fetching user data:', error);
@@ -14,7 +14,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:userId', async (req, res) => {
+userRouter.get('/users/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
     const user = await fetchUserById(userId);
@@ -29,7 +29,7 @@ router.get('/users/:userId', async (req, res) => {
   }
 });
 
-router.post('/users', async (req, res) => {
+userRouter.post('/users', async (req, res) => {
   try {
     const userData = req.body;
     const newUser = await createUser(userData);
@@ -40,7 +40,7 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.put('/users/:userId', async (req, res) => {
+userRouter.put('/users/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
     const updatedUserData = req.body;
@@ -56,7 +56,7 @@ router.put('/users/:userId', async (req, res) => {
   }
 });
 
-router.delete('/users/:userId', async (req, res) => {
+userRouter.delete('/users/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
     const deletedUser = await deleteUser(userId);
@@ -71,4 +71,6 @@ router.delete('/users/:userId', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = {
+  userRouter
+};

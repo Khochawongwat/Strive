@@ -4,6 +4,7 @@ import { FormikValues } from "formik";
 import { matchAuthErrorCode } from "../utils/ErrorHandler";
 import axios from "axios";
 import { firebaseApp } from "../apps/firebase.app";
+import AUTH_ENDPOINTS from "../utils/Endpoints";
 
 axios.defaults.withCredentials = true
 
@@ -15,12 +16,18 @@ export async function signUpWithEmail(formik: FormikValues): Promise<UserCredent
   }
 
   try {
+    await axios.post(AUTH_ENDPOINTS.users, {
+      email: formik.email,
+      displayName: "",
+      createdDate: Date.now()
+    }).catch((error) => {
+      throw new Error(error)
+    })
     await createUserWithEmailAndPassword(firebaseAuth, email, password);
-    const user = await signInWithEmail(formik);
-    return user;
+    const userCredential = await signInWithEmail(formik);
+    return userCredential;
   } catch (error: any) {
     let errorMessage = "Sign-up failed";
-
     if (error.code === "auth/email-already-in-use") {
       errorMessage = "The email address is already in use by another account.";
     } else if (error.code === "auth/invalid-email") {
@@ -28,14 +35,13 @@ export async function signUpWithEmail(formik: FormikValues): Promise<UserCredent
     } else if (error.code === "auth/weak-password") {
       errorMessage = "The password is too weak. Please choose a stronger password.";
     }
-
     console.error("Sign-up error:", error.code);
     throw new Error(errorMessage);
   }
 }
 
 export async function signInWithEmail(formik: FormikValues): Promise<UserCredential> {
-  const { email, password} = formik;
+  const { email, password } = formik;
 
   if (!email || !password) {
     throw new Error("Email and password are required");
