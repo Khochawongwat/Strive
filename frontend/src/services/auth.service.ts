@@ -51,4 +51,14 @@ export async function signInWithEmail(formik: FormikValues): Promise<UserCredent
   }
 }
 
+export async function signOut(): Promise<Boolean> {
+  try {
+    await firebaseAuth.signOut();
+    return true;
+  } catch (error) {
+    console.error('Error during sign out:', error);
+    throw new Error('Failed to sign out');
+  }
+}
+
 export const firebaseAuth = getAuth(firebaseApp)

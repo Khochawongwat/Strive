@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { signInWithEmail } from "../../services/auth.service";
 import { green } from "@mui/material/colors";
-import axios from 'axios';
 
 interface Props {
     toggleAuthenticationMode: () => void
@@ -40,14 +39,7 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                 setSuccess(false);
                 setLoading(true);
                 try {
-                    const userCredential = await signInWithEmail(values);
-                    if (values.rememberMe) {
-                        const idToken = await userCredential.user.getIdToken();
-                        await axios.post("http://localhost:3000/auth/sessionLogin", {
-                            idToken
-                        });
-                        console.log('Session Cookie Set');
-                    }
+                    await signInWithEmail(values);
                     notify("Welcome back achiever! You'll be redirected shortly to our dashboard.");
                     setLoading(false);
                     setSuccess(true);
@@ -73,12 +65,6 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                     flexDirection: 'column',
                     width: '100%',
                 }}>
-                    <Button onClick={async () => {
-                        const session = await axios.get("http://localhost:3000/auth/retrieveSession")
-                        console.log(session)
-                    }}>
-                        Fetch Cookie
-                    </Button>
                     <Box>
                         <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
                             Welcome, Achiever

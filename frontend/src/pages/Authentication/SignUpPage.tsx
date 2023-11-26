@@ -10,7 +10,6 @@ import { signUpWithEmail } from "../../services/auth.service";
 import { useState } from "react";
 import { green } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 interface Props {
     toggleAuthenticationMode: () => void
@@ -44,16 +43,10 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                 setLoading(true);
                 try {
                     await signUpWithEmail(values)
-                        .then((userCredential) => {
+                        .then(() => {
                             setSuccess(true)
                             notify("Your account has been successfully created. We're excited to have you on board. You'll be redirected shortly to our dashboard.")
                             setTimeout(async () => {
-                                if (values.rememberMe) {
-                                    const idToken = await userCredential.user.getIdToken();
-                                    await axios.post("http://localhost:3000/auth/sessionLogin", {
-                                        idToken
-                                    })
-                                }
                                 navigate('/')
                             }, 2000)
                         })

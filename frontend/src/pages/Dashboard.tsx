@@ -1,85 +1,77 @@
 import { Button, CssBaseline, Grid, Paper, ThemeProvider } from '@mui/material';
-import axios from 'axios';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { firebaseAuth } from '../services/auth.service';
-import { AUTH_ENDPOINTS } from '../utils/Endpoints';
+import { firebaseAuth, signOut } from '../services/auth.service';
 import defaultTheme from '../theme';
 import NavAppBar from '../components/features/NavAppBar';
+import { User } from '@firebase/auth';
 
 const DashboardPage = () => {
-    const [loading, setLoading] = useState(true)
-    const [success, setSuccess] = useState(false)
-
-    const [sessionState, setSessionState] = useState({
-        firebaseToken: '',
-        sessionToken: '',
-        verified: false,
-    });
+    const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState(false);
+    const [token, setToken] = useState("");
 
     useEffect(() => {
-        firebaseAuth.onAuthStateChanged(async function (user) {
+        const handleAuthStateChanged = async (user: User | null) => {
             if (user) {
-                const token = await user.getIdToken();
-                setSessionState((prevState) => ({
-                    ...prevState,
-                    firebaseToken: token
-                }));
-                console.log("User found.")
+                try {
+                    const token = await user.getIdToken();
+                    console.log("User found via Firebase");
+                    setToken(token)
+                } catch (error: any) {
+                    console.error('Error getting user token:', error.message);
+                }
             } else {
                 console.log("No user signed in.");
             }
+            setSuccess(true)
             setLoading(false)
-        });
-    }, [])
-
-    useEffect(() => {
-        const fetchSession = async () => {
-            if (!loading && sessionState.firebaseToken.length > 0) {
-                setLoading(true)
-                try {
-                    const response = await axios.get(AUTH_ENDPOINTS.retrieveSession)
-                    const session = response.data.session;
-                    console.log('Verifying sessions')
-                    if (session === sessionState.firebaseToken) {
-                        console.log("Session found.")
-                        setSessionState((prevState) => ({
-                            ...prevState,
-                            sessionToken: session,
-                            verified: true,
-                        }));
-                    } else {
-                        console.error("Session is not the same. Please login again.")
-                    }
-                } catch (error: any) {
-                    console.error('Error retrieving session:', error.message);
-                }
-                setSuccess(true)
-                setLoading(false)
-            }
         };
-        fetchSession();
-    }, [sessionState.firebaseToken]);
 
-    if (!sessionState.verified && !loading && success) {
-        return <Navigate to="/auth" />
+        const unsubscribe = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
+
+        return () => {
+            unsubscribe()
+        };
+
+    }, [token]);
+
+
+    const shouldRedirect = token.length === 0 && success && !loading
+
+    if (shouldRedirect) {
+        console.log("Leaving");
+        return <Navigate to="/auth" />;
     }
 
     return (
         <ThemeProvider theme={defaultTheme}>
-            <NavAppBar/>
-            <Grid container component={Paper} square sx={{
-                height: '100vh',
-                width: '100vw',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                userSelect: 'none',
-            }}>
-                <CssBaseline />
-                
-                We're here! 
-            </Grid>
+            {!loading && <>
+                <NavAppBar />
+                <Button onClick={async () => console.log(await firebaseAuth.currentUser)}>
+                    Get User
+                </Button>
+                <Button onClick={async () => {
+                    const response = await signOut()
+                    if (response) {
+                        setToken('')
+                    }
+                }}>
+                    Log out
+                </Button>
+                <Grid container component={Paper} square sx={{
+                    height: '100vh',
+                    width: '100vw',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    userSelect: 'none',
+                }}>
+                    <CssBaseline />
+
+                    We're here!
+                </Grid>
+            </>}
         </ThemeProvider>
     )
 }

@@ -4,8 +4,9 @@ import SignUpPage from "./SignUpPage";
 import SignInPage from "./SignInPage";
 import "./Authentication.css";
 import { Alert, Box, Snackbar, SnackbarOrigin } from "@mui/material";
-import axios from "axios";
 import { Navigate } from "react-router-dom";
+import { User } from "@firebase/auth";
+import { firebaseAuth } from "../../services/auth.service";
 
 interface State extends SnackbarOrigin {
     open: boolean
@@ -23,10 +24,9 @@ const Authentication: React.FC = () => {
     }
     )
     const {vertical, horizontal, open, message} = snackState
-    const [session, setSession] = useState(null);
+    const [token, setToken] = useState("");
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
-
 
     const handleOpen = (message: String) => {
         setSnackState({...snackState, open: true, message: message})
@@ -45,28 +45,33 @@ const Authentication: React.FC = () => {
     };
 
     useEffect(() => {
-        const fetchSession = async () => {
-            if (!loading) {
-                setLoading(true)
+        const handleAuthStateChanged = async (user: User | null) => {
+            if (user) {
                 try {
-                    const response = await axios.get("http://localhost:3000/auth/retrieveSession")
-                    const session = response.data.session;
-                    if (session) {
-                        console.log("Session found. Navigating to Dashboard.")
-                        setSession(session);
-                    }
+                    const token = await user.getIdToken();
+                    console.log("AuthPage: User found. Navigating to Dashboard");
+                    setToken(token)
                 } catch (error: any) {
-                    console.error('Error retrieving session:', error.message);
+                    console.error('Error getting user token:', error.message);
                 }
-                setSuccess(true)
-                setLoading(false)
+            } else {
+                console.log("No user signed in.");
             }
+            setSuccess(true)
+            setLoading(false)
         };
 
-        fetchSession();
-    }, []);
+        const unsubscribe = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
 
-    if (session && !loading && success) {
+        return () => {
+            unsubscribe()
+        };
+
+    }, [token]);
+
+    const shouldRedirect = token.length > 0 && success && !loading
+
+    if (shouldRedirect) {
         return <Navigate to="/" />
     }
 
