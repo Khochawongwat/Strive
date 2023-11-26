@@ -2,7 +2,6 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const cors = require("cors")
 const bodyParser = require('body-parser')
-const jwt = require('jsonwebtoken')
 const rateLimitMiddleware = require('./middlewares/ratelimit');
 
 const corsOptions = {
@@ -35,3 +34,4 @@ app.use((req, res, next) => {
     }
     next();
 });
+
