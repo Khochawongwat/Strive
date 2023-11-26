@@ -6,10 +6,11 @@ import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";
 import StyledTextField from "../../components/commons/TextFields/StyledTextField";
 import { CheckCircleOutline, ConfirmationNumberOutlined, EmailOutlined, PasswordOutlined } from "@mui/icons-material";
-import { signUpWithEmail } from "../../services/auth.service";
+import { signInWithEmail, signUpWithEmail } from "../../services/auth.service";
 import { useState } from "react";
 import { green } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
+import { setPersistence } from "@firebase/auth";
 
 interface Props {
     toggleAuthenticationMode: () => void
@@ -37,19 +38,15 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
             rememberMe: true,
         },
         validationSchema: validationSchema,
+
         onSubmit: async (values) => {
             if (!loading && !success) {
                 setSuccess(false);
                 setLoading(true);
                 try {
                     await signUpWithEmail(values)
-                        .then(() => {
-                            setSuccess(true)
-                            notify("Your account has been successfully created. We're excited to have you on board. You'll be redirected shortly to our dashboard.")
-                            setTimeout(async () => {
-                                navigate('/')
-                            }, 2000)
-                        })
+                    await signInWithEmail(values)
+                    setSuccess(true)
                 } catch (error: any) {
                     console.error("Form submission error:", error.message)
                     notify("Error: " + error.message)

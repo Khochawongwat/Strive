@@ -1,12 +1,12 @@
-const { MongoClient} = require('mongodb');
-const {MONGO_URI, MONGO_OPTIONS, DATABASE_NAME} = require("../config/server.config")
+const { MongoClient } = require('mongodb');
+const { MONGO_URI, MONGO_OPTIONS, DATABASE_NAME } = require("../config/server.config")
 
 const client = new MongoClient(MONGO_URI, MONGO_OPTIONS);
 
 async function connectToMongoDB() {
   const maxAttempts = 5;
   let currentAttempt = 0;
-  
+
   while (currentAttempt < maxAttempts) {
     try {
       console.log("Attempting to connect to MongoDB..")
@@ -29,7 +29,6 @@ async function connectToMongoDB() {
   }
 }
 
-
 async function closeMongoDBConnection() {
   try {
     await client.close();
@@ -42,7 +41,7 @@ async function closeMongoDBConnection() {
 
 async function fetchDataFromMongoDB(COLLECTION_NAME) {
   try {
-    const database = client.db(DATABASE_NAME); 
+    const database = client.db(DATABASE_NAME);
     const collection = database.collection(COLLECTION_NAME);
 
     const data = await collection.find({}).toArray();
@@ -53,9 +52,20 @@ async function fetchDataFromMongoDB(COLLECTION_NAME) {
   }
 }
 
+async function isConnected() {
+  try {
+    const res = await client.db("admin").command({ ping: 1 })
+    return res.ok === 1
+  }catch(error){
+    console.error(error)
+    return false
+  }
+}
+
 module.exports = {
   client,
   connectToMongoDB,
   closeMongoDBConnection,
   fetchDataFromMongoDB,
+  isConnected,
 };

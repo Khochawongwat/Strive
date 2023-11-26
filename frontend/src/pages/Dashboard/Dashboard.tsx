@@ -1,9 +1,9 @@
 import { Button, CssBaseline, Grid, Paper, ThemeProvider } from '@mui/material';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { firebaseAuth, signOut } from '../services/auth.service';
-import defaultTheme from '../theme';
-import NavAppBar from '../components/features/NavAppBar';
+import { firebaseAuth, signOut } from '../../services/auth.service';
+import defaultTheme from '../../theme';
+import NavAppBar from '../../components/features/NavAppBar';
 import { User } from '@firebase/auth';
 
 const DashboardPage = () => {
@@ -36,7 +36,6 @@ const DashboardPage = () => {
 
     }, [token]);
 
-
     const shouldRedirect = token.length === 0 && success && !loading
 
     if (shouldRedirect) {
@@ -44,34 +43,36 @@ const DashboardPage = () => {
         return <Navigate to="/auth" />;
     }
 
+    if (loading) {
+        return <>Loading</>
+    }
+    
     return (
         <ThemeProvider theme={defaultTheme}>
-            {!loading && <>
-                <NavAppBar />
-                <Button onClick={async () => console.log(await firebaseAuth.currentUser)}>
-                    Get User
-                </Button>
-                <Button onClick={async () => {
-                    const response = await signOut()
-                    if (response) {
-                        setToken('')
-                    }
-                }}>
-                    Log out
-                </Button>
-                <Grid container component={Paper} square sx={{
-                    height: '100vh',
-                    width: '100vw',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    userSelect: 'none',
-                }}>
-                    <CssBaseline />
+            <NavAppBar />
+            <Button onClick={async () => console.log(await firebaseAuth.currentUser)}>
+                Get User
+            </Button>
+            <Button onClick={async () => {
+                const response = await signOut()
+                if (response) {
+                    setToken('')
+                }
+            }}>
+                Log out
+            </Button>
+            <Grid container component={Paper} square sx={{
+                height: '100vh',
+                width: '100vw',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                userSelect: 'none',
+            }}>
+                <CssBaseline />
 
-                    We're here!
-                </Grid>
-            </>}
+                We're here!
+            </Grid>
         </ThemeProvider>
     )
 }

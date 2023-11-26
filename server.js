@@ -4,8 +4,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const rateLimitMiddleware = require('./backend/middlewares/ratelimit');
 const { userRouter } = require('./backend/routes/user.route');
+const { generalRouter } = require('./backend/routes/general.route');
+
 const {
-    client,
     connectToMongoDB,
     closeMongoDBConnection,
 } = require('./backend/utils/general.function');
@@ -24,7 +25,7 @@ async function startServer() {
 
         await connectToMongoDB()
 
-        app.use('/auth', rateLimitMiddleware);
+        app.use('/api', rateLimitMiddleware);
         app.use(cors(corsOptions));
         app.use(bodyParser.json());
         app.use(cookieParser());
@@ -40,7 +41,7 @@ async function startServer() {
         });
 
         app.use('/api', userRouter);
-
+        app.use('/api', generalRouter);
         app.listen(port, () => {
             console.log("Listening to port: " + port);
         });
@@ -49,7 +50,7 @@ async function startServer() {
             await closeMongoDBConnection();
             process.exit();
         });
-        
+
     } catch (error) {
         console.error('Error starting the server:', error);
         process.exit(1);

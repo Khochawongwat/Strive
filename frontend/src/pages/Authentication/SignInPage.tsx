@@ -40,14 +40,11 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
                 setLoading(true);
                 try {
                     await signInWithEmail(values);
-                    notify("Welcome back achiever! You'll be redirected shortly to our dashboard.");
                     setLoading(false);
                     setSuccess(true);
-
                     setTimeout(async () => {
                         navigate('/')
                     }, 2000);
-                    
                 } catch (error: any) {
                     console.error("Form submission error:", error.message);
                     setLoading(false);

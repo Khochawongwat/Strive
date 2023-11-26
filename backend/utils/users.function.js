@@ -6,7 +6,6 @@ async function fetchUserById(userId) {
     try {
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Users');
-
         const user = await collection.findOne({ _id: ObjectId(userId) });
         return user;
     } catch (error) {
@@ -20,7 +19,6 @@ async function createUser(userData) {
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Users');
         const result = await collection.insertOne(userData);
-        console.log(result)
         return result;
     } catch (error) {
         console.error('Error creating user in MongoDB:', error);

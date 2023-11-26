@@ -16,15 +16,17 @@ export async function signUpWithEmail(formik: FormikValues): Promise<UserCredent
   }
 
   try {
+    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    const user = userCredential.user
     await axios.post(AUTH_ENDPOINTS.users, {
-      email: formik.email,
-      displayName: "",
+      _id: user.uid,
+      email: user.email,
+      displayName: user.displayName,
       createdDate: Date.now()
-    }).catch((error) => {
+    }).catch(async (error) => {
+      await user.delete()
       throw new Error(error)
     })
-    await createUserWithEmailAndPassword(firebaseAuth, email, password);
-    const userCredential = await signInWithEmail(formik);
     return userCredential;
   } catch (error: any) {
     let errorMessage = "Sign-up failed";
@@ -49,7 +51,6 @@ export async function signInWithEmail(formik: FormikValues): Promise<UserCredent
 
   try {
     const userCredential: UserCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-    console.log(userCredential)
     return userCredential;
   } catch (error: any) {
     console.error("Sign-in error:", matchAuthErrorCode(error));
