@@ -1,10 +1,11 @@
-import { Button, CssBaseline, Grid, Paper, ThemeProvider } from '@mui/material';
+import { Box, CssBaseline, Grid, Paper, ThemeProvider } from '@mui/material';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { firebaseAuth, signOut } from '../../services/auth.service';
+import { firebaseAuth } from '../../services/auth.service';
 import defaultTheme from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
 import { User } from '@firebase/auth';
+import TasksBox from '../../components/features/TasksBox';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
@@ -46,21 +47,10 @@ const DashboardPage = () => {
     if (loading) {
         return <>Loading</>
     }
-    
+
     return (
         <ThemeProvider theme={defaultTheme}>
             <NavAppBar />
-            <Button onClick={async () => console.log(await firebaseAuth.currentUser)}>
-                Get User
-            </Button>
-            <Button onClick={async () => {
-                const response = await signOut()
-                if (response) {
-                    setToken('')
-                }
-            }}>
-                Log out
-            </Button>
             <Grid container component={Paper} square sx={{
                 height: '100vh',
                 width: '100vw',
@@ -70,8 +60,7 @@ const DashboardPage = () => {
                 userSelect: 'none',
             }}>
                 <CssBaseline />
-
-                We're here!
+                <TasksBox/>
             </Grid>
         </ThemeProvider>
     )

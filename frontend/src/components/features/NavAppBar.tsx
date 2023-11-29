@@ -1,7 +1,7 @@
 import { Box, Toolbar, IconButton, Typography, AppBar, Badge } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import { AccountCircle, TimerOutlined, WaterDropOutlined } from "@mui/icons-material";
+import { AccountCircle, LocalFireDepartmentOutlined, TimerOutlined, WaterDropOutlined } from "@mui/icons-material";
 import { useState } from "react";
 import AlarmButton from "../commons/Buttons/AlarmButton";
 interface Props {
@@ -18,18 +18,16 @@ const NavAppBar: React.FC<Props> = ({ }) => {
             Strive
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-         <AlarmButton/>
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit" sx={{
+          <Box sx={{ display: { xs: 'none', md: 'flex'} }}>
+            <AlarmButton />
+            <IconButton size="large" disableRipple color="inherit" sx={{
               borderRadius: 1,
             }}>
-              <Badge badgeContent={1} color="primary">
-                <WaterDropOutlined />
-              </Badge>
+              <LocalFireDepartmentOutlined />
             </IconButton>
             <IconButton
               size="large"
-              aria-label="show 17 new notifications"
+              disableRipple
               color="inherit"
               sx={{
                 borderRadius: 1,
@@ -42,7 +40,6 @@ const NavAppBar: React.FC<Props> = ({ }) => {
             <IconButton
               size="large"
               edge="end"
-              aria-label="account of current user"
               aria-haspopup="true"
               color="inherit"
               sx={{
@@ -54,6 +51,7 @@ const NavAppBar: React.FC<Props> = ({ }) => {
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
+              disableRipple
               size="large"
               aria-label="show more"
               aria-haspopup="true"
