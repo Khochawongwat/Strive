@@ -1,11 +1,6 @@
 import { Component } from "react";
 import { Box, Typography } from "@mui/material";
 import { grey } from "@mui/material/colors";
-import { number } from "yup";
-
-interface Props {
-
-}
 
 function matchColor(number: number): string {
     let color;
@@ -34,7 +29,6 @@ function matchColor(number: number): string {
 
     return color;
 }
-
 
 class GridComponent extends Component {
     renderGrid() {
@@ -69,14 +63,14 @@ class GridComponent extends Component {
 }
 
 const TasksBox = () => {
-    return <Box>
+    return <Box sx ={{display: 'flex', flexDirection: 'column', alignContent: 'center'}}>
         <Typography color={grey[300]} sx={{ my: '8px' }}>
-            0 tasks done this year.
+            0 Tasks completed for this year
         </Typography>
         <Box sx={{
             border: "1px solid" + grey[600],
             borderRadius: '8px',
-            p: '2rem'
+            p: '1rem'
         }}>
             <GridComponent />
         </Box>

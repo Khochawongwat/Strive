@@ -6,6 +6,9 @@ import defaultTheme from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
 import { User } from '@firebase/auth';
 import TasksBox from '../../components/features/TasksBox';
+import PinnedTasks from '../../components/features/PinnedTasks';
+import { grey } from '@mui/material/colors';
+import TasksBoard from '../../components/features/TasksBoard';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
@@ -55,12 +58,16 @@ const DashboardPage = () => {
                 height: '100vh',
                 width: '100vw',
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: 'column',
                 justifyContent: 'center',
+                color: grey[300],
                 userSelect: 'none',
+                px: '25%',
             }}>
                 <CssBaseline />
-                <TasksBox/>
+                <Box sx = {{display: 'flex', flexDirection: 'column', gap: '32px'}}>
+                    <TasksBoard/>
+                </Box>
             </Grid>
         </ThemeProvider>
     )
