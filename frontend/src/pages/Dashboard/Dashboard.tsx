@@ -5,10 +5,10 @@ import { firebaseAuth } from '../../services/auth.service';
 import defaultTheme from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
 import { User } from '@firebase/auth';
-import TasksBox from '../../components/features/TasksBox';
+import TasksBox from '../../components/features/StreakBoard';
 import PinnedTasks from '../../components/features/PinnedTasks';
 import { grey } from '@mui/material/colors';
-import TasksBoard from '../../components/features/TasksBoard';
+import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
@@ -55,22 +55,23 @@ const DashboardPage = () => {
         <ThemeProvider theme={defaultTheme}>
             <NavAppBar />
             <Grid container component={Paper} square sx={{
-                height: '100vh',
                 width: '100vw',
+                minHeight: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 color: grey[300],
                 userSelect: 'none',
-                px: '25%',
+                px: '12.5%',
             }}>
                 <CssBaseline />
                 <Box sx = {{display: 'flex', flexDirection: 'column', gap: '32px'}}>
                     <TasksBoard/>
+                    <PinnedTasks/>
                 </Box>
             </Grid>
         </ThemeProvider>
     )
 }
 
-export default DashboardPage
+export default DashboardPage;

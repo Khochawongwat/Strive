@@ -62,7 +62,7 @@ class GridComponent extends Component {
     }
 }
 
-const TasksBox = () => {
+const StreakBoard = () => {
     return <Box sx ={{display: 'flex', flexDirection: 'column', alignContent: 'center'}}>
         <Typography color={grey[300]} sx={{ my: '8px' }}>
             0 Tasks completed for this year
@@ -77,4 +77,4 @@ const TasksBox = () => {
     </Box>
 };
 
-export default TasksBox;
+export default StreakBoard;
