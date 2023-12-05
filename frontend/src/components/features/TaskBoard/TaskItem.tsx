@@ -1,11 +1,13 @@
 import { Box, Card, Typography } from "@mui/material";
 import { myPalette } from '../../../theme';
 import { DragIndicatorOutlined } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TaskInfoDialog from "../../commons/Dialogs/TaskInfoDialog";
-import { useSpring, animated } from 'react-spring';
+import { useSpring, animated, update } from 'react-spring';
 import { TaskClass } from "../../../schema/Task.schema";
 import TaskTagsComponent from "./TaskTagsComponent";
+import axios from "axios";
+import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
 
 interface Props {
     task: TaskClass;
@@ -26,18 +28,60 @@ const TaskItem: React.FC<Props> = ({ task }) => {
         setDialogOpen(false);
     };
 
-    const handleTaskProgression = () => {
-        if(task.subtasks && task.subtasks.length > 0){
-            const isAnyCompleted = task.subtasks.some(subtask => subtask.status === 3)
-            if(isAnyCompleted){
-                
+    const handleTaskProgression = async () => {
+        if (task.subtasks && task.subtasks.length > 0) {
+            const isAnyCompleted = task.subtasks.some(subtask => subtask.status === 3);
+            const allCompleted = task.subtasks.every(subtask => subtask.status === 3);
+            const noneCompleted = task.subtasks.every(subtask => subtask.status === 0);
+
+            if(noneCompleted  && !task.manual && task.status !== 1){
+                const updatedTask = {
+                    ...task,
+                    status: 0
+                }
+                const response = await axios.put(TASKS_ENDPOINTS.tasks + `/${task._id}`,
+                    updatedTask
+                )
+                console.log(response)
+            }
+
+            if (isAnyCompleted && !task.manual && task.status !== 1 && task.status !== 3) {
+                const updatedTask = {
+                    ...task,
+                    status: 1
+                }
+                const response = await axios.put(TASKS_ENDPOINTS.tasks + `/${task._id}`,
+                    updatedTask
+                )
+                console.log(response)
+            }
+
+            if (allCompleted && !task.manual && task.status !== 3) {
+                const updatedTask = {
+                    ...task,
+                    status: 3
+                };
+
+                try {
+                    const response = await axios.put(
+                        TASKS_ENDPOINTS.tasks + `/${task._id}`,
+                        updatedTask
+                    );
+                    console.log(response);
+                } catch (error) {
+                    console.error("Error updating task:", error);
+                }
             }
         }
     }
+
     const slideAnimation = useSpring({
         transform: dialogOpen ? 'translateY(-12.5%)' : 'translateY(0%)',
     });
 
+    useEffect(() => {
+        handleTaskProgression()
+    }, [])
     return (
         <animated.div style={slideAnimation}>
             <Card
@@ -82,7 +126,7 @@ const TaskItem: React.FC<Props> = ({ task }) => {
                     </Typography>
                     <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
                 </Box>
-                <TaskTagsComponent tags = {task.tags}/>
+                <TaskTagsComponent tags={task.tags} />
                 <TaskInfoDialog handleClose={handleCloseDialog} open={dialogOpen} task={task} />
             </Card>
         </animated.div>

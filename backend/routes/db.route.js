@@ -6,6 +6,7 @@ const {
     deleteTasksByColumn,
     createSubtask,
     updateSubtask,
+    updateTask,
 } = require('../utils/db.function');
 
 const DBRouter = express.Router();
@@ -21,6 +22,19 @@ DBRouter.post("/tasks", async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+//Update a task
+DBRouter.put("/tasks/:taskId", async (req, res) => {
+    try{
+        const taskId = req.params.taskId
+        const updatedTask = req.body
+        const updated = await updateTask(taskId, updatedTask)
+        res.status(201).json(updated)
+    }catch(error){
+        console.error(error)
+        res.status(500).json({error: 'Internal Server Error'})
+    }
+})
 
 DBRouter.put("/tasks/:taskId/:subtaskId", async (req, res) => {
     try {
@@ -38,7 +52,6 @@ DBRouter.put("/tasks/:taskId/:subtaskId", async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 
 DBRouter.post("/tasks/:taskId", async (req, res) => {
     try{
