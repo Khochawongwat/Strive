@@ -1,29 +1,28 @@
 export interface Task {
-    type: string;
-    title: string;
+    _id: string;
     description: string;
     dueDate?: Date;
-    priority?: 'low' | 'medium' | 'high';
-    subtasks?: Task[];
+    priority: number;
+    subtasks?: TaskClass[];
     attachments?: string[];
     tags?: string[];
-    status: string;
+    status: number;
+    parent: string | null;
 }
 
 export class TaskClass implements Task {
-    type: string;
-    title: string;
+    _id: string;
     description: string;
     dueDate?: Date;
-    priority?: 'low' | 'medium' | 'high';
-    subtasks?: Task[];
+    priority: number;
+    subtasks?: TaskClass[];
     attachments?: string[];
     tags?: string[];
-    status: string;
+    status: number;
+    parent: string | null;
 
     constructor(taskData: Task) {
-        this.type = taskData.type;
-        this.title = taskData.title;
+        this._id = taskData._id;
         this.description = taskData.description;
         this.dueDate = taskData.dueDate;
         this.priority = taskData.priority;
@@ -31,9 +30,10 @@ export class TaskClass implements Task {
         this.attachments = taskData.attachments;
         this.tags = taskData.tags;
         this.status = taskData.status;
+        this.parent = taskData.parent;
     }
 
     markAsCompleted(): void {
-        this.status = "completed";
+        this.status = 3;
     }
 }

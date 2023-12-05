@@ -17,7 +17,7 @@ const TaskSearchBar: React.FC<Props> = ({ setSearchQuery }) => (
             placeholder="Find a task.."
             size="small"
         />
-        <IconButton type="submit" aria-label="search">
+        <IconButton aria-label="search" disableRipple>
             <Search style={{ fill: "grey" }} />
         </IconButton>
     </form>

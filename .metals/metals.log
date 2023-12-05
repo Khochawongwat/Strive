@@ -1,0 +1,9 @@
+2023.12.04 13:45:22 INFO  Started: Metals version 1.1.0 in folders 'D:\Document\VisualStudioCode\strive' for client Visual Studio Code 1.84.2.
+2023.12.04 13:45:25 WARN  Build server is not auto-connectable.
+2023.12.04 13:45:25 WARN  no build tool detected in workspace 'D:\Document\VisualStudioCode\strive'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.12.04 13:53:46 INFO  Shutting down server
+2023.12.04 13:53:46 INFO  shutting down Metals
+2023.12.04 13:53:46 INFO  Exiting server
+2023.12.04 13:59:00 INFO  Started: Metals version 1.1.0 in folders 'D:\Document\VisualStudioCode\strive' for client Visual Studio Code 1.84.2.
+2023.12.04 13:59:02 WARN  Build server is not auto-connectable.
+2023.12.04 13:59:02 WARN  no build tool detected in workspace 'D:\Document\VisualStudioCode\strive'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 

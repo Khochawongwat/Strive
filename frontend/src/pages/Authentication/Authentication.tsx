@@ -4,7 +4,7 @@ import SignUpPage from "./SignUpPage";
 import SignInPage from "./SignInPage";
 import "./Authentication.css";
 import { Alert, Box, Snackbar, SnackbarOrigin } from "@mui/material";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate} from "react-router-dom";
 import { User } from "@firebase/auth";
 import { firebaseAuth } from "../../services/auth.service";
 

@@ -1,14 +1,11 @@
-import { Box, CssBaseline, Grid, Paper, ThemeProvider } from '@mui/material';
+import { Box, CssBaseline, Paper, ThemeProvider } from '@mui/material';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { firebaseAuth } from '../../services/auth.service';
-import defaultTheme from '../../theme';
+import { defaultTheme } from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
-import { User } from '@firebase/auth';
-import TasksBox from '../../components/features/StreakBoard';
-import PinnedTasks from '../../components/features/PinnedTasks';
-import { grey } from '@mui/material/colors';
 import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
+import { User } from '@firebase/auth';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
@@ -40,7 +37,7 @@ const DashboardPage = () => {
 
     }, [token]);
 
-    const shouldRedirect = token.length === 0 && success && !loading
+    const shouldRedirect = token.length === 0 && success && !loading;
 
     if (shouldRedirect) {
         console.log("Leaving");
@@ -48,30 +45,37 @@ const DashboardPage = () => {
     }
 
     if (loading) {
-        return <>Loading</>
+        return <>Loading</>;
     }
 
     return (
         <ThemeProvider theme={defaultTheme}>
-            <NavAppBar />
-            <Grid container component={Paper} square sx={{
-                width: '100vw',
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                color: grey[300],
-                userSelect: 'none',
-                px: '12.5%',
-            }}>
-                <CssBaseline />
-                <Box sx = {{display: 'flex', flexDirection: 'column', gap: '32px'}}>
-                    <TasksBoard/>
-                    <PinnedTasks/>
-                </Box>
-            </Grid>
+            <CssBaseline />
+            <Box
+                sx={{
+                    height: '100vh',
+                    width: '100vw',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    userSelect: 'none'
+                }}
+            >
+                <NavAppBar />
+                <Paper
+                    component={Box}
+                    square
+                    sx={{
+                        flexGrow: 1, 
+                        overflowY: 'scroll',
+                        px: '12.5%',
+                        pt: '6.25%'
+                    }}
+                >   
+                    <TasksBoard />
+                </Paper>
+            </Box>
         </ThemeProvider>
-    )
+    );
 }
 
 export default DashboardPage;

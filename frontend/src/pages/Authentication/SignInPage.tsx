@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@emotion/react"
 import { Box, Typography, Button, Checkbox, FormControlLabel, CircularProgress } from "@mui/material"
-import defaultTheme from "../../theme"
+import {defaultTheme} from "../../theme"
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";

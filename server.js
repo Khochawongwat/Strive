@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const rateLimitMiddleware = require('./backend/middlewares/ratelimit');
 const { userRouter } = require('./backend/routes/user.route');
 const { generalRouter } = require('./backend/routes/general.route');
+const { DBRouter} = require("./backend/routes/db.route");
 
 const {
     connectToMongoDB,
@@ -42,6 +43,8 @@ async function startServer() {
 
         app.use('/api', userRouter);
         app.use('/api', generalRouter);
+        app.use('/api', DBRouter);
+        
         app.listen(port, () => {
             console.log("Listening to port: " + port);
         });

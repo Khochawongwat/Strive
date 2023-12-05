@@ -4,7 +4,7 @@ import { FormikValues } from "formik";
 import { matchAuthErrorCode } from "../utils/ErrorHandler";
 import axios from "axios";
 import { firebaseApp } from "../apps/firebase.app";
-import AUTH_ENDPOINTS from "../utils/Endpoints";
+import { AUTH_ENDPOINTS } from "../utils/endpoints";
 
 axios.defaults.withCredentials = true
 

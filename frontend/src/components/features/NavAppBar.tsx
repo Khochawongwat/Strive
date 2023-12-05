@@ -1,18 +1,18 @@
-import { Box, Toolbar, IconButton, Typography, AppBar, Badge } from "@mui/material";
+import { Box, Toolbar, IconButton, Typography, AppBar, Badge, Button } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import { AccountCircle, LocalFireDepartmentOutlined, TimerOutlined, WaterDropOutlined } from "@mui/icons-material";
 import { useState } from "react";
 import AlarmButton from "../commons/Buttons/AlarmButton";
+import { getAuth } from "@firebase/auth";
+import { firebaseApp } from "../../apps/firebase.app";
 interface Props {
 
 }
 
 const NavAppBar: React.FC<Props> = ({ }) => {
-
   return (
-    <Box sx={{ flexGrow: 1, userSelect: 'none', bgcolor: 'transparent' }}>
-      <AppBar position="static">
+      <AppBar position="sticky" sx={{ top: 0, zIndex: 1000 }}>
         <Toolbar>
           <Typography variant="h6" component="div">
             Strive
@@ -48,6 +48,11 @@ const NavAppBar: React.FC<Props> = ({ }) => {
             >
               <AccountCircle />
             </IconButton>
+            <Button onClick={async () => {
+              await getAuth(firebaseApp).signOut()
+            }}>
+              LOg out
+            </Button>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -65,7 +70,6 @@ const NavAppBar: React.FC<Props> = ({ }) => {
           </Box>
         </Toolbar>
       </AppBar>
-    </Box>
   );
 }
 export default NavAppBar
