@@ -4,7 +4,8 @@ const {
     fetchTasksById,
     deleteTaskById,
     deleteTasksByColumn,
-    createSubtask
+    createSubtask,
+    updateSubtask,
 } = require('../utils/db.function');
 
 const DBRouter = express.Router();
@@ -20,6 +21,24 @@ DBRouter.post("/tasks", async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+DBRouter.put("/tasks/:taskId/:subtaskId", async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const subtaskId = req.params.subtaskId;
+        const updatedSubtask = req.body;
+        const result = await updateSubtask(taskId, subtaskId, updatedSubtask)
+        if (result) {
+            res.json(result);
+        } else {
+            res.status(404).json({ error: 'Subtask not found' });
+        }
+    } catch (error) {
+        console.error("Error updating subtask in MongoDB: ", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 DBRouter.post("/tasks/:taskId", async (req, res) => {
     try{

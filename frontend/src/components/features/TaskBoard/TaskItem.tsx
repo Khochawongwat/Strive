@@ -26,6 +26,14 @@ const TaskItem: React.FC<Props> = ({ task }) => {
         setDialogOpen(false);
     };
 
+    const handleTaskProgression = () => {
+        if(task.subtasks && task.subtasks.length > 0){
+            const isAnyCompleted = task.subtasks.some(subtask => subtask.status === 3)
+            if(isAnyCompleted){
+                
+            }
+        }
+    }
     const slideAnimation = useSpring({
         transform: dialogOpen ? 'translateY(-12.5%)' : 'translateY(0%)',
     });

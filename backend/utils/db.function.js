@@ -14,7 +14,24 @@ async function createTask(taskData) {
     }
 }
 
-async function createSubtask(taskId, subtask){
+async function updateSubtask(taskId, subtaskId, updatedSubtask) {
+    try {
+        const database = client.db(DATABASE_NAME);
+        const collection = database.collection('Tasks');
+        const result = await collection.findOneAndUpdate(
+            { _id: new ObjectId(taskId), 'subtasks._id': subtaskId},
+            { $set: { 'subtasks.$': updatedSubtask } },
+            { returnDocument: 'after' }
+        );
+
+        return result;
+    } catch (error) {
+        console.error("Error updating subtask in MongoDB: ", error);
+        throw error;
+    }
+}
+
+async function createSubtask(taskId, subtask) {
     try {
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Tasks');
@@ -23,7 +40,10 @@ async function createSubtask(taskId, subtask){
         if (existingTask) {
             const updatedTask = await collection.findOneAndUpdate(
                 { _id: new ObjectId(taskId) },
-                { $push: { subtasks: subtask } },
+                { $push: { subtasks: {
+                    _id: new ObjectId(),
+                    ...subtask,
+                } } },
                 { returnDocument: 'after' }
             );
             return updatedTask.value;
@@ -31,7 +51,7 @@ async function createSubtask(taskId, subtask){
             console.error('Task not found.');
             return null;
         }
-    }catch(error){
+    } catch (error) {
         console.error("Error creating subtask in MongoDB: ", error)
         throw error
     }
@@ -77,6 +97,7 @@ module.exports = {
     createTask,
     createSubtask,
     fetchTasksById,
+    updateSubtask,
     deleteTaskById,
     deleteTasksByColumn
 }

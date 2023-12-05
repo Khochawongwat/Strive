@@ -8,10 +8,12 @@ export interface Task {
     tags?: string[];
     status: number;
     parent: string | null;
+    manual: boolean;
 }
 
 export class TaskClass implements Task {
     _id: string;
+    manual: boolean;
     description: string;
     dueDate?: Date;
     priority: number;
@@ -23,6 +25,7 @@ export class TaskClass implements Task {
 
     constructor(taskData: Task) {
         this._id = taskData._id;
+        this.manual = taskData.manual;
         this.description = taskData.description;
         this.dueDate = taskData.dueDate;
         this.priority = taskData.priority;

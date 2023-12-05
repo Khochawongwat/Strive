@@ -28,7 +28,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
     const handleOpenSubtasksCreation = () => {
         setShowSubtasks(true)
     }
-
+    
     const addSubtask = async () => {
         console.log("Adding subtask:", subtaskInput);
         const subtask = {
@@ -37,15 +37,26 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
             status: 0,
             parent: task._id
         } as Task
-        const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`, {
+        const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`,
             subtask
-        })
+        )
         console.log(response)
         setSubtaskInput("");
     };
 
+    const handleUpdateSubtask = async (taskId: string, subtaskId: string, updatedSubtask: Task) => {
+        try {
+            const response = await axios.put(
+                `${TASKS_ENDPOINTS.tasks}/${taskId}/${subtaskId}`,
+                updatedSubtask
+            );
+            console.log("Subtask updated successfully:", response.data);
+        } catch (error) {
+            throw Error("Error updatig subtask: " + error)
+        }
+    };
+
     useEffect(() => {
-        console.log(subtasks)
         if (subtasks.length > 0) {
             const completedSubtasks = subtasks.filter((subtask) => subtask.status === 3);
             const completionPercentage = (completedSubtasks.length / subtasks.length) * 100;
@@ -101,29 +112,41 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
                                     </Typography>
                                 </Box>
                                 <Box sx={{ width: '100%' }}>
-                                    <LinearProgress variant="determinate" color={progress === 1 ? 'success' : 'primary'} value={progress} style={{ height: '6px', borderRadius: '6px'}}></LinearProgress>
+                                    <LinearProgress variant="determinate" color={progress === 1 ? 'success' : 'primary'} value={progress} style={{ height: '6px', borderRadius: '6px' }}></LinearProgress>
                                 </Box>
                             </Box>
                         </Box>
                         <FormGroup>
-                            {subtasks.map((value: any, index) => {
-                                const subtask = value.subtask as Task
+                            {subtasks.map((subtask: Task, index) => {
                                 return (
-                                    <FormControlLabel key={index} control={
-                                    <Checkbox
-                                        defaultChecked={subtask.status === 3}
-                                        onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            const updatedSubtasks = [...subtasks];
-                                            const subtask = updatedSubtasks[index] as Task
-                                            subtask.status = isChecked ? 3 : 0;
-                                            setSubtasks(updatedSubtasks);
-                                            console.log(subtask.status)
-                                        }}
-                                    />} label={subtask.description} />
-                                )
+                                    <FormControlLabel
+                                        key={index}
+                                        control={
+                                            <Checkbox
+                                                checked={subtask.status === 3}
+                                                onChange={async (e) => {
+                                                    const isChecked = e.target.checked;
+                                                    const updatedSubtasks = [...subtasks];
+                                                    const subtaskToUpdate = updatedSubtasks[index] as Task;
+
+                                                    await handleUpdateSubtask(task._id, subtaskToUpdate._id, {
+                                                        ...subtaskToUpdate,
+                                                        status: isChecked ? 3 : 0,
+                                                    }).catch(() => {
+                                                        return;
+                                                    });
+
+                                                    subtaskToUpdate.status = isChecked ? 3 : 0;
+                                                    setSubtasks(updatedSubtasks);
+                                                }}
+                                            />
+                                        }
+                                        label={subtask.description}
+                                    />
+                                );
                             })}
                         </FormGroup>
+
                         {creatingTask ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <TextField
