@@ -94,6 +94,42 @@ async function createSubtask(taskId, subtask) {
     }
 }
 
+async function deleteSubtask(taskId, subtaskId) {
+    try {
+        const database = client.db(DATABASE_NAME);
+        const collection = database.collection('Tasks');
+
+        const result = await collection.findOneAndUpdate(
+            { _id: new ObjectId(taskId) },
+            { $pull: { subtasks: { _id: new ObjectId(subtaskId) } } },
+            { returnDocument: 'after' }
+        );
+
+        return result;
+    } catch (error) {
+        console.error("Error deleting subtask in MongoDB: ", error);
+        throw error;
+    }
+}
+
+async function deleteAllSubtasks(taskId) {
+    try {
+        const database = client.db(DATABASE_NAME);
+        const collection = database.collection('Tasks');
+
+        const result = await collection.findOneAndUpdate(
+            { _id: new ObjectId(taskId) },
+            { $set: { subtasks: [] } },
+            { returnDocument: 'after' }
+        );
+
+        return result;
+    } catch (error) {
+        console.error("Error deleting all subtasks in MongoDB: ", error);
+        throw error;
+    }
+}
+
 async function deleteTaskById(taskId) {
     try {
         const database = client.db(DATABASE_NAME);
@@ -138,5 +174,7 @@ module.exports = {
     updateSubtask,
     deleteTaskById,
     deleteTasksByColumn,
-    updateTask
+    updateTask,
+    deleteSubtask,
+    deleteAllSubtasks
 }

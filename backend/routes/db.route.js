@@ -4,8 +4,10 @@ const {
     fetchTasksById,
     deleteTaskById,
     deleteTasksByColumn,
+    deleteAllSubtasks,
     createSubtask,
     updateSubtask,
+    deleteSubtask,
     updateTask,
 } = require('../utils/db.function');
 
@@ -25,14 +27,45 @@ DBRouter.post("/tasks", async (req, res) => {
 
 //Update a task
 DBRouter.put("/tasks/:taskId", async (req, res) => {
-    try{
+    try {
         const taskId = req.params.taskId
         const updatedTask = req.body
         const updated = await updateTask(taskId, updatedTask)
         res.status(201).json(updated)
-    }catch(error){
+    } catch (error) {
         console.error(error)
-        res.status(500).json({error: 'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+DBRouter.delete("/tasks/:taskId/all-subtasks", async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const result = await deleteAllSubtasks(taskId);
+        if (result) {
+            res.json(result);
+        } else {
+            res.status(404).json({ error: 'Task not found' });
+        }
+    } catch (error) {
+        console.error("Error deleting all subtasks in MongoDB: ", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+DBRouter.delete("/tasks/:taskId/:subtaskId", async (req, res) => {
+    try {
+        const taskId = req.params.taskId
+        const subtaskId = req.params.subtaskId
+        const result = await deleteSubtask(taskId, subtaskId)
+        if (result) {
+            res.json(result)
+        } else {
+            res.status(404).json({ error: 'Subtask not found' })
+        }
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 })
 
@@ -54,14 +87,14 @@ DBRouter.put("/tasks/:taskId/:subtaskId", async (req, res) => {
 });
 
 DBRouter.post("/tasks/:taskId", async (req, res) => {
-    try{
+    try {
         const subtask = req.body
         const taskId = req.params.taskId
         const updated = await createSubtask(taskId, subtask)
         res.status(201).json(updated)
-    }catch(error){
+    } catch (error) {
         console.error(error)
-        res.status(500).json({ error: 'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 })
 

@@ -1,10 +1,10 @@
-import { CloseOutlined, AutoAwesomeMosaicOutlined, CheckBoxOutlined } from "@mui/icons-material";
+import { CloseOutlined, AutoAwesomeMosaicOutlined, CheckBoxOutlined, Delete } from "@mui/icons-material";
 import { Dialog, DialogTitle, IconButton, DialogContent, Box, Button, Typography, LinearProgress, TextField, Checkbox, FormControlLabel, FormGroup, SnackbarOrigin, Alert, Snackbar } from "@mui/material";
 import { Task, TaskClass } from "../../../schema/Task.schema";
 import { useEffect, useState } from "react";
 import { myPalette } from "../../../theme";
 import axios from "axios";
-import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
+import { TASKS_ENDPOINTS } from '../../../utils/endpoints';
 
 interface Props {
     handleClose: () => void;
@@ -12,15 +12,16 @@ interface Props {
     task: TaskClass;
     handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
     handleUpdateSubtask: (taskId: string, subtaskId: string, updatedTask: Task) => Promise<Task>;
+    subtasks: TaskClass[];
+    setSubtasks: (subtasks: TaskClass[]) => void
 }
 interface State extends SnackbarOrigin {
     openSnack: boolean
     message: String
 }
 
-const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdatedTask, handleUpdateSubtask }) => {
+const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
     const [showSubtasks, setShowSubtasks] = useState(task.subtasks && task.subtasks.length > 0 ? true : false)
-    const [subtasks, setSubtasks] = useState<TaskClass[]>([])
     const [creatingTask, setCreatingTask] = useState(false)
     const [subtaskInput, setSubtaskInput] = useState("");
     const [progress, setProgress] = useState(0)
@@ -31,6 +32,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdate
         horizontal: 'center',
     })
     const { vertical, horizontal, openSnack, message } = snackState
+
     useEffect(() => {
         if (task.subtasks) {
             setSubtasks(task.subtasks)
@@ -41,20 +43,44 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdate
         setShowSubtasks(true)
     }
 
-    const addSubtask = async () => {
-        console.log("Adding subtask:", subtaskInput);
-        const subtask = {
-            description: subtaskInput,
-            priority: 0,
-            status: 0,
-            parent: task._id
-        } as Task
+    const handleDeleteAllSubtasks = async () => {
+        try {
+            const response = await axios.delete(`${TASKS_ENDPOINTS.tasks}/${task._id}/all-subtasks`)
+            setSubtasks([])
+            setShowSubtasks(false)
+            console.log(response.data)
+        } catch (error) {
+            console.error("Error deleting subtask:", error);
+        }
+    }
+    const handleDeleteSubtask = async (subtask: TaskClass) => {
+        try {
+            const response = await axios.delete(`${TASKS_ENDPOINTS.tasks}/${task._id}/${subtask._id}`);
+            setSubtasks(subtasks.filter((prevSubtask) => prevSubtask._id !== subtask._id));
+            console.log(response.data)
+        } catch (error) {
+            console.error("Error deleting subtask:", error);
+        }
+    };
 
-        const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`,
-            subtask
-        )
-        setSubtasks(response.data.subtasks)
-        setSubtaskInput("");
+    const addSubtask = async () => {
+        try {
+            console.log("Adding subtask:", subtaskInput);
+            const subtask = {
+                description: subtaskInput,
+                priority: 0,
+                status: 0,
+                parent: task._id
+            } as Task
+
+            const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`,
+                subtask
+            )
+            setSubtasks(response.data.subtasks)
+            setSubtaskInput("");
+        } catch (error) {
+            console.error("Error deleting subtask:", error);
+        }
     };
 
     const handleSnackOpen = (message: String) => {
@@ -119,7 +145,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdate
                                 <CheckBoxOutlined />
                                 <Typography sx={{ fontWeight: '500' }}>Subtask Lists</Typography>
                             </Box>
-                            <Button onClick={() => setShowSubtasks(false)} sx={{ bgcolor: myPalette[952], color: myPalette[50] }}>
+                            <Button onClick={handleDeleteAllSubtasks} sx={{ bgcolor: myPalette[952], color: myPalette[50] }}>
                                 Delete
                             </Button>
                         </Box>
@@ -137,12 +163,12 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdate
                             </Box>
                         </Box>
                         <FormGroup>
-                            {subtasks.map((subtask: Task, index) => {
-                                return (
+                            {subtasks.map((subtask: Task, index) => (
+                                <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <FormControlLabel
-                                        key={index}
                                         control={
                                             <Checkbox
+                                                disableRipple
                                                 checked={subtask.status === 3}
                                                 onChange={async (e) => {
                                                     const isChecked = e.target.checked;
@@ -166,22 +192,38 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdate
                                                         operationCompleted = true;
 
                                                         clearTimeout(timeoutId);
-                                                        handleSnackClose()
-                                                        
+                                                        handleSnackClose();
+
                                                         subtaskToUpdate.status = isChecked ? 3 : 0;
                                                         setSubtasks(updatedSubtasks);
                                                     } catch (e) {
-                                                        handleSnackOpen("Error: Something went wrong while updating the latest changes. Please try again.");
+                                                        handleSnackOpen(
+                                                            "Error: Something went wrong while updating the latest changes. Please try again."
+                                                        );
                                                     }
                                                 }}
                                             />
-
                                         }
                                         label={subtask.description}
                                     />
-                                );
-                            })}
+                                    <IconButton
+                                        disableRipple
+                                        onClick={async () => {
+                                            try {
+                                                await handleDeleteSubtask(new TaskClass(subtask));
+                                                const updatedSubtasks = subtasks.filter((_, i) => i !== index);
+                                                setSubtasks(updatedSubtasks);
+                                            } catch (e) {
+                                                handleSnackOpen("Error: Something went wrong while deleting the subtask. Please try again.");
+                                            }
+                                        }}
+                                    >
+                                        <Delete />
+                                    </IconButton>
+                                </div>
+                            ))}
                         </FormGroup>
+
 
                         {creatingTask ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
