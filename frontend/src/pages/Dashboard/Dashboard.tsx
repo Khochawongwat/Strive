@@ -6,12 +6,15 @@ import { defaultTheme } from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
 import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
 import { User } from '@firebase/auth';
+import PomoBoard from '../../components/features/Pomodoro/PomoBoard';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(false);
     const [token, setToken] = useState("");
-
+    const [timer, setTimer] = useState(0)
+    const [timerIsRunning, setTimerIsRunning] = useState(false)
+    
     useEffect(() => {
         const handleAuthStateChanged = async (user: User | null) => {
             if (user) {
@@ -48,7 +51,7 @@ const DashboardPage = () => {
         return <>Loading</>;
     }
 
-    return (
+    return ( 
         <ThemeProvider theme={defaultTheme}>
             <CssBaseline />
             <Box
@@ -60,7 +63,7 @@ const DashboardPage = () => {
                     userSelect: 'none'
                 }}
             >
-                <NavAppBar />
+                <NavAppBar  timer = {timer} setTimer= {setTimer} timerIsRunning = {timerIsRunning} setTimerIsRunning= {setTimerIsRunning}/>
                 <Paper
                     component={Box}
                     square
@@ -70,7 +73,8 @@ const DashboardPage = () => {
                         px: '12.5%',
                         pt: '6.25%'
                     }}
-                >   
+                >      
+                    <PomoBoard/>
                     <TasksBoard />
                 </Paper>
             </Box>

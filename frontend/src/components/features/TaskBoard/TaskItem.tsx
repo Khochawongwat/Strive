@@ -1,4 +1,4 @@
-import { Box, Card, CircularProgress, Typography } from "@mui/material";
+import { Alert, Box, Card, CircularProgress, Snackbar, SnackbarOrigin, Typography } from "@mui/material";
 import { myPalette } from '../../../theme';
 import { CheckCircleOutline, DragIndicatorOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
@@ -8,16 +8,38 @@ import { Task, TaskClass } from "../../../schema/Task.schema";
 import TaskTagsComponent from "./TaskTagsComponent";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 interface Props {
     task: TaskClass;
     handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
 }
+interface State extends SnackbarOrigin {
+    openSnack: boolean
+    message: String
+}
+
 
 const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [progress, setProgress] = useState(0)
     const [subtasks, setSubtasks] = useState<TaskClass[]>([])
+    const [snackState, setSnackState] = useState<State>({
+        openSnack: false,
+        message: "",
+        vertical: 'top',
+        horizontal: 'center',
+    })
+    const { vertical, horizontal, openSnack, message } = snackState
+
+    const handleSnackOpen = (message: String) => {
+        setSnackState({ ...snackState, openSnack: true, message: message })
+    }
+
+    const handleSnackClose = () => {
+        setSnackState({ ...snackState, openSnack: false, message: '' })
+    }
 
     const handleUpdateSubtask = async (taskId: string, subtaskId: string, updatedSubtask: Task) => {
         try {
@@ -31,6 +53,7 @@ const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
             throw Error("Error updatig subtask: " + error)
         }
     };
+
 
     const handleDoubleClick = () => {
         handleOpenDialog();
@@ -65,54 +88,71 @@ const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
     }, [subtasks]);
 
     return (
-        <animated.div style={slideAnimation}>
-            <Card
-                onDoubleClick={handleDoubleClick}
-                sx={{
-                    border: `1px solid ${dialogOpen ? myPalette[50] : 'transparent'}`,
-                    my: 1,
-                    borderRadius: '4px',
-                    background: myPalette[952],
-                    py: '12px',
-                    pl: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 3,
-                    cursor: 'pointer'
-                }}
+        <Box>
+            <Snackbar
+                autoHideDuration={3000}
+                anchorOrigin={{ vertical, horizontal }}
+                open={openSnack}
+                onClose={handleSnackClose}
+                key={vertical + horizontal}
             >
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'start',
-                    mr: '4px',
+                <Alert onClose={handleSnackClose} severity={message.includes("Error") ? "error" : 'success'}>
+                    {message}
+                </Alert>
+            </Snackbar>
+            <animated.div style={slideAnimation}>
 
-                }}>
-                    <Typography
-                        fontSize="12px"
-                        color={myPalette[50]}
-                        fontWeight="500"
-                        sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitBoxOrient: 'vertical',
-                            WebkitLineClamp: 5,
-                            minHeight: '3em',
-                            maxHeight: '6em',
-                            wordWrap: 'break-word'
-                        }}
-                    >
-                        {task.description}
-                    </Typography>
-                    <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
-                </Box>
-                <TaskTagsComponent tags={task.tags} />
-                {progress === 100 ? <CheckCircleOutline color={progress === 100 ? "success" : "primary"}/> : <CircularProgress style = {{width: '24px', height: '24px'}} value={progress} variant="determinate" color={progress === 100 ? "success" : "primary"}/> }
-                <TaskInfoDialog setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleUpdatedTask={handleUpdatedTask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />
-            </Card>
-        </animated.div>
+                <Card
+                    onDoubleClick={handleDoubleClick}
+                    sx={{
+                        border: `1px solid ${dialogOpen ? myPalette[50] : 'transparent'}`,
+                        my: 1,
+                        borderRadius: '4px',
+                        background: myPalette[952],
+                        py: '12px',
+                        pl: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                        cursor: 'pointer'
+                    }}
+                >
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'start',
+                        mr: '4px',
+
+                    }}>
+                        <Typography
+                            fontSize="12px"
+                            color={myPalette[50]}
+                            fontWeight="500"
+                            sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitBoxOrient: 'vertical',
+                                WebkitLineClamp: 5,
+                                minHeight: '3em',
+                                maxHeight: '6em',
+                                wordWrap: 'break-word'
+                            }}
+                        >
+                            {task.description}
+                        </Typography>
+                        <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
+                    </Box>
+                    <TaskTagsComponent tags={task.tags} />
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        {progress === 100 ? <CheckCircleOutline color={progress === 100 ? "success" : "primary"} /> : <CircularProgress style={{ width: '24px', height: '24px' }} value={progress} variant="determinate" color={progress === 100 ? "success" : "primary"} />}
+                        {subtasks.length > 0 && <Typography sx={{ fontSize: '12px' }}>{`${subtasks.filter((subtask) => subtask.status === 3).length}/${subtasks.length}`}</Typography>}
+                    </Box>
+                    <TaskInfoDialog handleSnackOpen={handleSnackOpen} setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleUpdatedTask={handleUpdatedTask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />
+                </Card>
+            </animated.div>
+        </Box>
     );
 };
 
