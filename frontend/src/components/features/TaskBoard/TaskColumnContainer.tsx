@@ -13,13 +13,14 @@ import { firebaseApp } from '../../../apps/firebase.app';
 interface Props {
     id: string;
     maxHeight?: number | string;
-    updateTaskLists: (newTask: TaskClass) => void;
+    handleAddTask: (newTask: TaskClass) => void;
     hidden: boolean;
     handleHiddenStates: (preStatus: number) => void;
     title: string;
     list: TaskClass[];
     preStatus: number;
     updateDeletedTaskLists: (status: number) => void
+    handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
     loading: boolean
 }
 
@@ -33,7 +34,7 @@ interface State extends SnackbarOrigin {
     message: String
 }
 
-const TaskColumnContainer: React.FC<Props> = ({ loading, updateDeletedTaskLists, list, title, updateTaskLists, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
+const TaskColumnContainer: React.FC<Props> = ({handleUpdatedTask, loading, updateDeletedTaskLists, list, title, handleAddTask, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
     const [dialogStates, setDialogStates] = useState<DialogStates>({
         taskCreationDialog: false,
         settingsDialog: false,
@@ -138,7 +139,7 @@ const TaskColumnContainer: React.FC<Props> = ({ loading, updateDeletedTaskLists,
                         <Box sx = {{display: 'flex', justifyContent:'center', height: '6rem', alignItems: 'center'}}>
                             {!hidden && <CircularProgress style={{width: '2.5rem', height: '2.5rem', opacity: '.5'}}/>}
                         </Box>) : (!hidden && list.map((task, index) => (
-                            <TaskItem key={index} task={task} />
+                            <TaskItem handleUpdatedTask = {handleUpdatedTask} key={index} task={task} />
                         )))}
                     {!hidden && <Button onClick={() => handleOpenDialog('taskCreationDialog')} sx={{ background: myPalette[400], color: myPalette[50], alignItems: 'center', py: '0px' }}>
                         <AddOutlined />
@@ -146,7 +147,7 @@ const TaskColumnContainer: React.FC<Props> = ({ loading, updateDeletedTaskLists,
                 </Box>
 
             </Paper>
-            <TaskCreationDialog open={dialogStates.taskCreationDialog} handleClose={() => handleCloseDialog('taskCreationDialog')} preStatus={preStatus} updateTaskLists={updateTaskLists} />
+            <TaskCreationDialog open={dialogStates.taskCreationDialog} handleClose={() => handleCloseDialog('taskCreationDialog')} preStatus={preStatus} updateTaskLists={handleAddTask} />
         </Grid>
     )
 }

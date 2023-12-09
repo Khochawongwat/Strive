@@ -28,7 +28,6 @@ const validationSchema = Yup.object({
 const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
-    const navigate = useNavigate()
 
     const formik = useFormik({
         initialValues: {

@@ -1,5 +1,5 @@
 import { CloseOutlined, AutoAwesomeMosaicOutlined, CheckBoxOutlined } from "@mui/icons-material";
-import { Dialog, DialogTitle, IconButton, DialogContent, Box, Button, Typography, LinearProgress, TextField, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Dialog, DialogTitle, IconButton, DialogContent, Box, Button, Typography, LinearProgress, TextField, Checkbox, FormControlLabel, FormGroup, SnackbarOrigin, Alert, Snackbar } from "@mui/material";
 import { Task, TaskClass } from "../../../schema/Task.schema";
 import { useEffect, useState } from "react";
 import { myPalette } from "../../../theme";
@@ -10,15 +10,27 @@ interface Props {
     handleClose: () => void;
     open: boolean;
     task: TaskClass;
+    handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
+    handleUpdateSubtask: (taskId: string, subtaskId: string, updatedTask: Task) => Promise<Task>;
+}
+interface State extends SnackbarOrigin {
+    openSnack: boolean
+    message: String
 }
 
-const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
+const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task, handleUpdatedTask, handleUpdateSubtask }) => {
     const [showSubtasks, setShowSubtasks] = useState(task.subtasks && task.subtasks.length > 0 ? true : false)
     const [subtasks, setSubtasks] = useState<TaskClass[]>([])
     const [creatingTask, setCreatingTask] = useState(false)
     const [subtaskInput, setSubtaskInput] = useState("");
     const [progress, setProgress] = useState(0)
-
+    const [snackState, setSnackState] = useState<State>({
+        openSnack: false,
+        message: "",
+        vertical: 'top',
+        horizontal: 'center',
+    })
+    const { vertical, horizontal, openSnack, message } = snackState
     useEffect(() => {
         if (task.subtasks) {
             setSubtasks(task.subtasks)
@@ -28,7 +40,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
     const handleOpenSubtasksCreation = () => {
         setShowSubtasks(true)
     }
-    
+
     const addSubtask = async () => {
         console.log("Adding subtask:", subtaskInput);
         const subtask = {
@@ -37,24 +49,21 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
             status: 0,
             parent: task._id
         } as Task
+
         const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`,
             subtask
         )
-        console.log(response)
+        setSubtasks(response.data.subtasks)
         setSubtaskInput("");
     };
 
-    const handleUpdateSubtask = async (taskId: string, subtaskId: string, updatedSubtask: Task) => {
-        try {
-            const response = await axios.put(
-                `${TASKS_ENDPOINTS.tasks}/${taskId}/${subtaskId}`,
-                updatedSubtask
-            );
-            console.log("Subtask updated successfully:", response.data);
-        } catch (error) {
-            throw Error("Error updatig subtask: " + error)
-        }
-    };
+    const handleSnackOpen = (message: String) => {
+        setSnackState({ ...snackState, openSnack: true, message: message })
+    }
+
+    const handleSnackClose = () => {
+        setSnackState({ ...snackState, openSnack: false })
+    }
 
     useEffect(() => {
         if (subtasks.length > 0) {
@@ -68,6 +77,17 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
 
     return (
         <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} fullWidth maxWidth="sm">
+            <Snackbar
+                autoHideDuration={3000}
+                anchorOrigin={{ vertical, horizontal }}
+                open={openSnack}
+                onClose={handleClose}
+                key={vertical + horizontal}
+            >
+                <Alert onClose={handleClose} severity={message.includes("Error") ? "error" : 'success'}>
+                    {message}
+                </Alert>
+            </Snackbar>
             <Box sx={{ display: 'flex', alignItems: 'center', mx: '12px', justifyContent: 'space-between', userSelect: 'none' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AutoAwesomeMosaicOutlined />
@@ -129,17 +149,33 @@ const TaskInfoDialog: React.FC<Props> = ({ handleClose, open, task }) => {
                                                     const updatedSubtasks = [...subtasks];
                                                     const subtaskToUpdate = updatedSubtasks[index] as Task;
 
-                                                    await handleUpdateSubtask(task._id, subtaskToUpdate._id, {
-                                                        ...subtaskToUpdate,
-                                                        status: isChecked ? 3 : 0,
-                                                    }).catch(() => {
-                                                        return;
-                                                    });
+                                                    let operationCompleted = false;
 
-                                                    subtaskToUpdate.status = isChecked ? 3 : 0;
-                                                    setSubtasks(updatedSubtasks);
+                                                    const timeoutId = setTimeout(() => {
+                                                        if (!operationCompleted) {
+                                                            handleSnackOpen("It's taking longer than expected due to connectivity issues");
+                                                        }
+                                                    }, 500);
+
+                                                    try {
+                                                        await handleUpdateSubtask(task._id, subtaskToUpdate._id, {
+                                                            ...subtaskToUpdate,
+                                                            status: isChecked ? 3 : 0,
+                                                        });
+
+                                                        operationCompleted = true;
+
+                                                        clearTimeout(timeoutId);
+                                                        handleSnackClose()
+                                                        
+                                                        subtaskToUpdate.status = isChecked ? 3 : 0;
+                                                        setSubtasks(updatedSubtasks);
+                                                    } catch (e) {
+                                                        handleSnackOpen("Error: Something went wrong while updating the latest changes. Please try again.");
+                                                    }
                                                 }}
                                             />
+
                                         }
                                         label={subtask.description}
                                     />

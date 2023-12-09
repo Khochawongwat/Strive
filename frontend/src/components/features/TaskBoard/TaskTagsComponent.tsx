@@ -2,6 +2,7 @@ import { Grid, Box } from '@mui/material';
 import React from 'react';
 import { myPalette } from '../../../theme';
 import { isJSON } from '../../../utils/helper';
+import { MAX_TAGS_PER_TASK } from '../../../configs/app.config';
 
 // Assuming Tag interface is defined somewhere
 interface Tag {
@@ -15,11 +16,10 @@ interface TaskProps {
 }
 
 const TaskTagsComponent: React.FC<TaskProps> = ({ tags }) => {
-  const MAX_DISPLAY_TAGS = 10;
 
   return (
     <Grid container sx={{ display: 'flex', flexDirection: 'row', gap: 1, pr: '12px' }}>
-      {tags?.slice(0, MAX_DISPLAY_TAGS).map((value, index) => {
+      {tags?.slice(0, MAX_TAGS_PER_TASK).map((value, index) => {
         if (!isJSON(value)) {
           return (
             <Box key={index} sx={{ '&:hover': { textDecoration: 'underline' } }}>

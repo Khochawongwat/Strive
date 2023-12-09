@@ -25,7 +25,7 @@ export class TaskClass implements Task {
 
     constructor(taskData: Task) {
         this._id = taskData._id;
-        this.manual = taskData.manual;
+        this.manual = taskData.manual ? taskData.manual : false;
         this.description = taskData.description;
         this.dueDate = taskData.dueDate;
         this.priority = taskData.priority;

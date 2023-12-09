@@ -16,14 +16,25 @@ async function createTask(taskData) {
 
 async function updateTask(taskId, updatedTask) {
     try {
-        const { _id, ...updatedTaskWithoutId } = updatedTask;
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Tasks');
+
+        const { _id, ...updatedTaskWithoutId } = updatedTask;
+        
+        const toBeUpdatedTask = {
+            ...updatedTaskWithoutId,
+            subtasks: updatedTaskWithoutId.subtasks.map(subtask => ({
+                ...subtask,
+                _id: new ObjectId(subtask._id),
+            })),
+        };
+
         const result = await collection.findOneAndUpdate(
             { _id: new ObjectId(taskId) },
-            { $set: updatedTaskWithoutId },
+            { $set: { ...toBeUpdatedTask } },
             { returnDocument: 'after' }
         );
+
         return result;
     } catch (error) {
         console.error("Error updating task in MongoDB: ", error);
@@ -36,11 +47,12 @@ async function updateSubtask(taskId, subtaskId, updatedSubtask) {
         if (!ObjectId.isValid(updatedSubtask._id)) {
             throw new Error('Invalid ObjectId for subtask._id');
         }
+
         const objectedSubtask = {
             ...updatedSubtask,
             _id: new ObjectId(subtaskId)
         }
-        
+
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Tasks');
         const result = await collection.findOneAndUpdate(
@@ -71,7 +83,7 @@ async function createSubtask(taskId, subtask) {
                 } } },
                 { returnDocument: 'after' }
             );
-            return updatedTask.value;
+            return updatedTask;
         } else {
             console.error('Task not found.');
             return null;

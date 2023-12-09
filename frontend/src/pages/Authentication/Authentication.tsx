@@ -21,8 +21,7 @@ const Authentication: React.FC = () => {
         message: "",
         vertical: 'top',
         horizontal: 'center',
-    }
-    )
+    })
     const {vertical, horizontal, open, message} = snackState
     const [token, setToken] = useState("");
     const [loading, setLoading] = useState(false)
