@@ -1,8 +1,7 @@
-import { Box, CssBaseline, Paper, ThemeProvider } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { firebaseAuth } from '../../services/auth.service';
-import { defaultTheme } from '../../theme';
 import NavAppBar from '../../components/features/NavAppBar';
 import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
 import { User } from '@firebase/auth';
@@ -14,7 +13,7 @@ const DashboardPage = () => {
     const [token, setToken] = useState("");
     const [timer, setTimer] = useState(0)
     const [timerIsRunning, setTimerIsRunning] = useState(false)
-    
+
     useEffect(() => {
         const handleAuthStateChanged = async (user: User | null) => {
             if (user) {
@@ -51,34 +50,31 @@ const DashboardPage = () => {
         return <>Loading</>;
     }
 
-    return ( 
-        <ThemeProvider theme={defaultTheme}>
-            <CssBaseline />
-            <Box
+    return (
+        <Box
+            sx={{
+                height: '100vh',
+                width: '100vw',
+                display: 'flex',
+                flexDirection: 'column',
+                userSelect: 'none'
+            }}
+        >
+            <NavAppBar timer={timer} setTimer={setTimer} timerIsRunning={timerIsRunning} setTimerIsRunning={setTimerIsRunning} />
+            <Paper
+                component={Box}
+                square
                 sx={{
-                    height: '100vh',
-                    width: '100vw',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    userSelect: 'none'
+                    flexGrow: 1,
+                    overflowY: 'scroll',
+                    px: '12.5%',
+                    pt: '6.25%'
                 }}
             >
-                <NavAppBar  timer = {timer} setTimer= {setTimer} timerIsRunning = {timerIsRunning} setTimerIsRunning= {setTimerIsRunning}/>
-                <Paper
-                    component={Box}
-                    square
-                    sx={{
-                        flexGrow: 1, 
-                        overflowY: 'scroll',
-                        px: '12.5%',
-                        pt: '6.25%'
-                    }}
-                >      
-                    <PomoBoard/>
-                    <TasksBoard />
-                </Paper>
-            </Box>
-        </ThemeProvider>
+                <PomoBoard />
+                <TasksBoard />
+            </Paper>
+        </Box>
     );
 }
 

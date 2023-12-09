@@ -1,6 +1,4 @@
-import { ThemeProvider } from "@emotion/react"
 import { Box, Typography, FormControlLabel, Checkbox, Button, CircularProgress } from "@mui/material"
-import {defaultTheme} from "../../theme"
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";
@@ -9,8 +7,6 @@ import { CheckCircleOutline, ConfirmationNumberOutlined, EmailOutlined, Password
 import { signInWithEmail, signUpWithEmail } from "../../services/auth.service";
 import { useState } from "react";
 import { green } from "@mui/material/colors";
-import { useNavigate } from "react-router-dom";
-import { setPersistence } from "@firebase/auth";
 
 interface Props {
     toggleAuthenticationMode: () => void
@@ -57,116 +53,115 @@ const SignUpPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
     });
 
     return (
-        <ThemeProvider theme={defaultTheme}>
-            <AuthPageLayout>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                }}>
-                    <Box>
-                        <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
-                            Welcome to Strive
-                        </Typography>
-                        <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h6" fontWeight="300">
-                            Start your productivity journey with other achievers
-                        </Typography>
-                    </Box>
-                    <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
-                        <>
-                            {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
-                            {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
-                            {StyledTextField(formik, 'confirmPassword', 'Confirm your password here...', 'password', <ConfirmationNumberOutlined />)}
-                            <FormControlLabel
-                                sx={{
-                                    mb: 2
-                                }}
-                                control={
-                                    <Checkbox
-                                        checked={formik.values.rememberMe}
-                                        onChange={formik.handleChange('rememberMe')}
-                                        color="primary" />
-                                }
-                                label="Remember me"
-                            />
-                        </>
-                        <Box
+        <AuthPageLayout>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+            }}>
+                <Box>
+                    <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
+                        Welcome to Strive
+                    </Typography>
+                    <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h6" fontWeight="300">
+                        Start your productivity journey with other achievers
+                    </Typography>
+                </Box>
+                <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
+                    <>
+                        {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
+                        {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
+                        {StyledTextField(formik, 'confirmPassword', 'Confirm your password here...', 'password', <ConfirmationNumberOutlined />)}
+                        <FormControlLabel
                             sx={{
+                                mb: 2
+                            }}
+                            control={
+                                <Checkbox
+                                    checked={formik.values.rememberMe}
+                                    onChange={formik.handleChange('rememberMe')}
+                                    color="primary" />
+                            }
+                            label="Remember me"
+                        />
+                    </>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
+                        }}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
+                            variant="outlined"
+                            sx={{
+                                ...(success && {
+                                    bgcolor: green[500],
+                                    '&:hover': {
+                                        bgcolor: green[700],
+                                    },
+                                }),
                                 display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'
-                            }}>
-                            <Button
-                                type="submit"
-                                fullWidth
-                                disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
-                                variant="outlined"
-                                sx={{
-                                    ...(success && {
-                                        bgcolor: green[500],
-                                        '&:hover': {
-                                            bgcolor: green[700],
-                                        },
-                                    }),
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    transition: 'background-color 0.3s ease',
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        transition: 'opacity 0.3s ease',
-                                    }}
-                                >
-                                    {loading && (
-                                        <CircularProgress
-                                            size={24}
-                                            sx={{
-                                                color: green,
-                                                top: '50%',
-                                                left: '50%',
-                                                opacity: success ? 0 : 1,
-                                            }}
-                                        />
-                                    )}
-                                    {!loading && (
-                                        success ? (
-                                            <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
-                                        ) : (
-                                            <Typography>Create an account</Typography>
-                                        )
-                                    )}
-                                </Box>
-                            </Button>
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                transition: 'background-color 0.3s ease',
+                            }}
+                        >
                             <Box
                                 sx={{
                                     display: 'flex',
                                     flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}>
-                                <Typography sx={{ opacity: .8 }}>
-                                    Or, already have an account?
-                                </Typography>
-                                <Button onClick={toggleAuthenticationMode} sx={{
-                                    ':hover': {
-                                        bgcolor: 'transparent',
-                                        color: 'white',
-                                    }
-                                }}>
-                                    Log in
-                                </Button>
+                                    alignItems: 'center',
+                                    transition: 'opacity 0.3s ease',
+                                }}
+                            >
+                                {loading && (
+                                    <CircularProgress
+                                        size={24}
+                                        sx={{
+                                            color: green,
+                                            top: '50%',
+                                            left: '50%',
+                                            opacity: success ? 0 : 1,
+                                        }}
+                                    />
+                                )}
+                                {!loading && (
+                                    success ? (
+                                        <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
+                                    ) : (
+                                        <Typography>Create an account</Typography>
+                                    )
+                                )}
                             </Box>
+                        </Button>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                            <Typography sx={{ opacity: .8 }}>
+                                Or, already have an account?
+                            </Typography>
+                            <Button onClick={toggleAuthenticationMode} sx={{
+                                ':hover': {
+                                    bgcolor: 'transparent',
+                                    color: 'white',
+                                }
+                            }}>
+                                Log in
+                            </Button>
                         </Box>
                     </Box>
                 </Box>
+            </Box>
 
-            </AuthPageLayout>
-        </ThemeProvider>)
+        </AuthPageLayout>
+    )
 }
 
 export default SignUpPage

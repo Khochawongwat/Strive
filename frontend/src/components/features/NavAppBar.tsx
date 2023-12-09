@@ -1,8 +1,7 @@
 import { Box, Toolbar, IconButton, Typography, AppBar, Badge, Button } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import { AccountCircle, LocalFireDepartmentOutlined, TimerOutlined, WaterDropOutlined } from "@mui/icons-material";
-import { useState } from "react";
+import { AccountCircle, LocalFireDepartmentOutlined } from "@mui/icons-material";
 import AlarmButton from "../commons/Buttons/AlarmButton";
 import { getAuth } from "@firebase/auth";
 import { firebaseApp } from "../../apps/firebase.app";

@@ -8,9 +8,6 @@ import { Task, TaskClass } from "../../../schema/Task.schema";
 import TaskTagsComponent from "./TaskTagsComponent";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-
 interface Props {
     task: TaskClass;
     handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void

@@ -1,6 +1,4 @@
-import { ThemeProvider } from "@emotion/react"
 import { Box, Typography, Button, Checkbox, FormControlLabel, CircularProgress } from "@mui/material"
-import {defaultTheme} from "../../theme"
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthPageLayout from "./AuthPageLayout";
@@ -55,113 +53,112 @@ const SignInPage: React.FC<Props> = ({ toggleAuthenticationMode, notify }) => {
     });
 
     return (
-        <ThemeProvider theme={defaultTheme}>
-            <AuthPageLayout>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                }}>
-                    <Box>
-                        <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
-                            Welcome, Achiever
-                        </Typography>
-                        <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h6" fontWeight="300">
-                            Log in to sync your content.
-                        </Typography>
-                    </Box>
-                    <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
-                        {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
+        <AuthPageLayout>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+            }}>
+                <Box>
+                    <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h4">
+                        Welcome, Achiever
+                    </Typography>
+                    <Typography sx={{ letterSpacing: 2 }} component="h1" variant="h6" fontWeight="300">
+                        Log in to sync your content.
+                    </Typography>
+                </Box>
+                <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 3 }}>
+                    {StyledTextField(formik, 'email', 'Enter your email address here...', 'email', <EmailOutlined />)}
 
-                        {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
-                        <FormControlLabel
+                    {StyledTextField(formik, 'password', 'Enter your password here...', 'password', <PasswordOutlined />)}
+                    <FormControlLabel
+                        sx={{
+                            mb: 2
+                        }}
+                        control={
+                            <Checkbox
+                                checked={formik.values.rememberMe}
+                                onChange={formik.handleChange('rememberMe')}
+                                color="primary" />
+                        }
+                        label="Remember me"
+                    />
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
+                        }}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
+                            variant="outlined"
                             sx={{
-                                mb: 2
-                            }}
-                            control={
-                                <Checkbox
-                                    checked={formik.values.rememberMe}
-                                    onChange={formik.handleChange('rememberMe')}
-                                    color="primary" />
-                            }
-                            label="Remember me"
-                        />
-                        <Box
-                            sx={{
+                                ...(success && {
+                                    bgcolor: green[500],
+                                    '&:hover': {
+                                        bgcolor: green[700],
+                                    },
+                                }),
                                 display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'
-                            }}>
-                            <Button
-                                type="submit"
-                                fullWidth
-                                disabled={(Object.keys(formik.errors).length > 0 || formik.values.email.length === 0 || formik.values.password.length === 0) && !loading || success}
-                                variant="outlined"
-                                sx={{
-                                    ...(success && {
-                                        bgcolor: green[500],
-                                        '&:hover': {
-                                            bgcolor: green[700],
-                                        },
-                                    }),
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    transition: 'background-color 0.3s ease',
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        transition: 'opacity 0.3s ease',
-                                    }}
-                                >
-                                    {loading && (
-                                        <CircularProgress
-                                            size={24}
-                                            sx={{
-                                                color: green,
-                                                top: '50%',
-                                                left: '50%',
-                                                opacity: success ? 0 : 1,
-                                            }}
-                                        />
-                                    )}
-                                    {!loading && (
-                                        success ? (
-                                            <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
-                                        ) : (
-                                            <Typography>Continue with email</Typography>
-                                        )
-                                    )}
-                                </Box>
-                            </Button>
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                transition: 'background-color 0.3s ease',
+                            }}
+                        >
                             <Box
                                 sx={{
                                     display: 'flex',
                                     flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}>
-                                <Typography sx={{ opacity: .8 }}>
-                                    Don't have an account?
-                                </Typography>
-                                <Button onClick={toggleAuthenticationMode} sx={{
-                                    ':hover': {
-                                        bgcolor: 'transparent',
-                                        color: 'white',
-                                    }
-                                }}>
-                                    Sign Up
-                                </Button>
+                                    alignItems: 'center',
+                                    transition: 'opacity 0.3s ease',
+                                }}
+                            >
+                                {loading && (
+                                    <CircularProgress
+                                        size={24}
+                                        sx={{
+                                            color: green,
+                                            top: '50%',
+                                            left: '50%',
+                                            opacity: success ? 0 : 1,
+                                        }}
+                                    />
+                                )}
+                                {!loading && (
+                                    success ? (
+                                        <CheckCircleOutline sx={{ marginRight: 1, opacity: 1 }} />
+                                    ) : (
+                                        <Typography>Continue with email</Typography>
+                                    )
+                                )}
                             </Box>
+                        </Button>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                            <Typography sx={{ opacity: .8 }}>
+                                Don't have an account?
+                            </Typography>
+                            <Button onClick={toggleAuthenticationMode} sx={{
+                                ':hover': {
+                                    bgcolor: 'transparent',
+                                    color: 'white',
+                                }
+                            }}>
+                                Sign Up
+                            </Button>
                         </Box>
                     </Box>
                 </Box>
-            </AuthPageLayout>
-        </ThemeProvider >)
+            </Box>
+        </AuthPageLayout>
+    )
 }
 
 export default SignInPage

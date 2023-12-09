@@ -1,5 +1,5 @@
 import { CloseOutlined, AutoAwesomeMosaicOutlined, CheckBoxOutlined, Delete } from "@mui/icons-material";
-import { Dialog, DialogTitle, IconButton, DialogContent, Box, Button, Typography, LinearProgress, TextField, Checkbox, FormControlLabel, FormGroup, SnackbarOrigin, Alert, Snackbar } from "@mui/material";
+import { Dialog, DialogTitle, IconButton, DialogContent, Box, Button, Typography, LinearProgress, TextField, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import { Task, TaskClass } from "../../../schema/Task.schema";
 import { useEffect, useState } from "react";
 import { myPalette } from "../../../theme";
@@ -26,7 +26,6 @@ const validationSchema = Yup.object({
 const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
     const [showSubtasks, setShowSubtasks] = useState(task.subtasks && task.subtasks.length > 0 ? true : false)
     const [creatingTask, setCreatingTask] = useState(false)
-    const [subtaskInput, setSubtaskInput] = useState("");
     const [progress, setProgress] = useState(0)
     const [loading, setLoading] = useState(false)
 
@@ -50,6 +49,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, t
         initialValues: {
             subtaskInput: ''
         },
+
         validationSchema: validationSchema,
 
         onSubmit: async (values) => {
@@ -113,7 +113,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, t
 
                 handleSnackOpen(`Successfully added a subtask {${(subtask.description as string).slice(0, 6)}....}`)
                 setSubtasks(response.data.subtasks)
-                setSubtaskInput("");
+                formik.resetForm()
             } catch (error) {
                 console.error("Error deleting subtask:", error);
             }
@@ -147,7 +147,6 @@ const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, t
 
     return (
         <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} fullWidth maxWidth="sm">
-
             <Box sx={{ display: 'flex', alignItems: 'center', mx: '12px', justifyContent: 'space-between', userSelect: 'none' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AutoAwesomeMosaicOutlined />
@@ -238,7 +237,7 @@ const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, t
                                     onChange={formik.handleChange}
                                 />
                                 <Box sx={{ display: 'flex', gap: 3 }}>
-                                    <Button sx={{ bgcolor: myPalette[400], color: myPalette[50] }} disabled = {Object.keys(formik.errors).length > 0} onClick={addSubtask}>
+                                    <Button sx={{ bgcolor: myPalette[400], color: myPalette[50] }} disabled = {Object.keys(formik.errors).length > 0 || formik.values['subtaskInput'].length === 0} onClick={addSubtask}>
                                         Add
                                     </Button>
                                     <Button disableRipple sx={{ color: myPalette[975] }} onClick={() => setCreatingTask(false)}>
