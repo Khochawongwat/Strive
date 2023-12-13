@@ -5,14 +5,56 @@ import { firebaseAuth } from '../../services/auth.service';
 import NavAppBar from '../../components/features/NavAppBar';
 import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
 import { User } from '@firebase/auth';
+import Timer from '../../schema/Timer.schema';
 import PomoBoard from '../../components/features/Pomodoro/PomoBoard';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(false);
     const [token, setToken] = useState("");
-    const [timer, setTimer] = useState(0)
-    const [timerIsRunning, setTimerIsRunning] = useState(false)
+    const [timer, setTimer] = useState<Timer>(new Timer())
+    const [time, setTime] = useState(timer.time)
+    const [isRunning, setIsRunning] = useState(timer.timerIsRunning)
+    const [isSessionDone, setIsSessionDone] = useState(false)
+
+    const [status, setStatus] = useState(timer.status)
+
+    useEffect(() => {
+        const savedTimer = localStorage.getItem("timer");
+        if (savedTimer) {
+            try {
+                const parsedTimer = JSON.parse(savedTimer);
+                const timerInstance = new Timer();
+                
+                timerInstance.time = parsedTimer.time;
+                timerInstance.timerIsRunning = parsedTimer.timerIsRunning;
+                timerInstance.isPomo = parsedTimer.isPomo;
+                timerInstance.status = parsedTimer.status;
+                timerInstance.autoStart = parsedTimer.autoStart;
+                timerInstance.completedShorts = parsedTimer.completedShorts;
+                timerInstance.shortsNeeded = parsedTimer.shortsNeeded;
+                timerInstance.completedLoops = parsedTimer.completedLoops;
+                timerInstance.loopsNeeded = parsedTimer.loopsNeeded;
+                setTimer(timerInstance);
+            } catch (error) {
+                console.error("Error parsing timer from localStorage:", error);
+            }
+        }
+    }, []);
+    
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setTime(timer.time);
+            setIsRunning(timer.timerIsRunning)
+            setStatus(timer.status)
+            setIsSessionDone(timer.isSessionDone())
+            localStorage.setItem("timer", JSON.stringify(timer))
+        }, 250);
+
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [timer.time, timer.timerIsRunning, timer]);
 
     useEffect(() => {
         const handleAuthStateChanged = async (user: User | null) => {
@@ -60,7 +102,7 @@ const DashboardPage = () => {
                 userSelect: 'none'
             }}
         >
-            <NavAppBar timer={timer} setTimer={setTimer} timerIsRunning={timerIsRunning} setTimerIsRunning={setTimerIsRunning} />
+            <NavAppBar timer={timer} timeStates={{ time: time, running: isRunning }} />
             <Paper
                 component={Box}
                 square
@@ -71,7 +113,9 @@ const DashboardPage = () => {
                     pt: '6.25%'
                 }}
             >
-                <PomoBoard timerState = {{timer: timer, timerIsRunning: timerIsRunning}}/>
+                <Box sx = {{display: 'flex', flexDirection: 'row', gap: '24px'}}>
+                    <PomoBoard timer={timer} timeStates={{ time: time, running: isRunning, status: status, done: isSessionDone}} />
+                </Box>
                 <TasksBoard />
             </Paper>
         </Box>

@@ -5,14 +5,16 @@ import { AccountCircle, LocalFireDepartmentOutlined } from "@mui/icons-material"
 import AlarmButton from "../commons/Buttons/AlarmButton";
 import { getAuth } from "@firebase/auth";
 import { firebaseApp } from "../../apps/firebase.app";
+import Timer from "../../schema/Timer.schema";
 interface Props {
-  timer: number;
-  setTimer: React.Dispatch<React.SetStateAction<number>>;
-  timerIsRunning: boolean;
-  setTimerIsRunning: (state: boolean) => void;
+  timer: Timer
+  timeStates: {
+    time: number
+    running: boolean
+  }
 }
 
-const NavAppBar: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTimerIsRunning }) => {
+const NavAppBar: React.FC<Props> = ({ timer, timeStates}) => {
   return (
       <AppBar position="sticky" sx={{ top: 0, zIndex: 1000 }}>
         <Toolbar>
@@ -21,7 +23,7 @@ const NavAppBar: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTimerI
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex'} }}>
-            <AlarmButton timer = {timer} setTimer= {setTimer} timerIsRunning = {timerIsRunning} setTimerIsRunning= {setTimerIsRunning}/>
+            <AlarmButton timer = {timer} timeStates={timeStates}/>
             <IconButton size="large" disableRipple color="inherit" sx={{
               borderRadius: 1,
             }}>

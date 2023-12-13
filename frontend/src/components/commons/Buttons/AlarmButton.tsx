@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Box, IconButton, Typography, InputAdornment } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { grey } from "@mui/material/colors";
-import { Timer, MoreHorizOutlined, Close, PlayArrowOutlined, TimerOutlined, ReplayOutlined, EventNoteOutlined, Pause, NoteOutlined } from "@mui/icons-material";
+import { TimerOutlined, ReplayOutlined, PlayArrowOutlined, Pause, MoreHorizOutlined, Close } from "@mui/icons-material";
 import AlarmSettingsDialog from "../Dialogs/AlarmSettingsDialog";
 import TaskListsDialog from "../Dialogs/TaskListsDialog";
 import { myPalette } from "../../../theme";
 import { formatTime } from "../../../utils/helper";
+import TimerClass from "../../../schema/Timer.schema";
 
 interface AlarmState {
     openAlarm: boolean;
@@ -14,28 +15,21 @@ interface AlarmState {
 }
 
 interface Props {
-    timer: number;
-    setTimer: React.Dispatch<React.SetStateAction<number>>;
-    timerIsRunning: boolean;
-    setTimerIsRunning: (state: boolean) => void;
+    timer: TimerClass;
+    timeStates: {
+        time: number
+        running: boolean
+      } 
 }
 
-const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTimerIsRunning }) => {
+const AlarmButton: React.FC<Props> = ({ timer, timeStates}) => {
     const [_, setAnchorEl] = useState<null | HTMLElement>(null);
     const [alarmState, setAlarmState] = useState<AlarmState>({
         openAlarm: false,
         openSettings: false,
         openTasks: false,
     });
-    const [timerId, setTimerId] = useState<any>()
     const [shake, setShake] = useState(false);
-
-    useEffect(() => {
-        const storedTimer = localStorage.getItem("timer");
-        if (storedTimer && storedTimer.length > 0) {
-            setTimer(Number(storedTimer));
-        }
-    }, []);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -59,11 +53,9 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
         });
     };
 
-
     useEffect(() => {
         let shakeInterval: string | number | NodeJS.Timeout | undefined;
-
-        if (timerIsRunning) {
+        if (timeStates.running) {
             shakeInterval = setInterval(() => {
                 setShake(true);
                 setTimeout(() => {
@@ -73,7 +65,7 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
         }
 
         return () => clearInterval(shakeInterval);
-    }, [timerIsRunning]);
+    }, [timeStates.running]);
 
     const closeSettings = () => {
         setAlarmState({
@@ -90,30 +82,17 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
         });
     };
 
-    const handleTimer = () => {
-        if (timerIsRunning) {
-            setTimerIsRunning(false);
-            clearInterval(timerId);
-        } else {
-            setTimerIsRunning(true);
-            const newTimerId = setInterval(() => {
-                setTimer((prevTimer) => {
-                    localStorage.setItem('timer', JSON.stringify(prevTimer + 1));
-                    return prevTimer + 1
-                });
-            }, 1000);
-            setTimerId(newTimerId);
-        }
+    const startTimer = () => {
+        timer.start();
     };
 
     const resetTimer = () => {
-        if (timer && timer > 0) {
-            setTimer(() => {
-                return 0
-            })
-            localStorage.setItem('timer', JSON.stringify(0))
-        }
-    }
+        timer.reset();
+    };
+
+    const pauseTimer = () => {
+        timer.pause();
+    };
 
     return (
         <>
@@ -141,10 +120,10 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
                             gap: '.75rem'
                         }}>
                             <TimerOutlined color={"primary"} />
-                            <Typography color={grey[400]}>{formatTime(timer)}</Typography>
+                            <Typography color={grey[400]}>{formatTime(timeStates.time)}</Typography>
                         </Box>
                         <IconButton color={"primary"} onClick={resetTimer}><ReplayOutlined /></IconButton>
-                        <IconButton color={"primary"} onClick={handleTimer}>{timerIsRunning ? <Pause /> : <PlayArrowOutlined />}</IconButton>
+                        <IconButton color={"primary"} onClick={timeStates.running ? pauseTimer : startTimer}>{timeStates.running ? <Pause /> : <PlayArrowOutlined />}</IconButton>
                         <IconButton color={"primary"} onClick={openSettings}><MoreHorizOutlined /></IconButton>
                     </Box>
                     <IconButton disableRipple color={"primary"} onClick={handleClose}><Close /></IconButton>
@@ -157,7 +136,7 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
                     aria-haspopup="true"
                     onClick={handleClick}
                     sx={{
-                        color: timerIsRunning ? myPalette[400] : "",
+                        color: timeStates.running ? myPalette[400] : "",
                         borderRadius: 2,
                         justifyContent: "center",
                         width: "fit-content",
@@ -181,7 +160,7 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
                         },
                     }}
                 >
-                    <Timer />
+                    <TimerOutlined />
                 </IconButton>
             )}
         </>

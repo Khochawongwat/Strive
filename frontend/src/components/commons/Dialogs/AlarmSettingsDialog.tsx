@@ -1,5 +1,6 @@
 import { CloseOutlined, AlarmOutlined } from "@mui/icons-material"
-import { Dialog, DialogTitle, IconButton, DialogContent, Box, Typography, DialogContentText, Switch, DialogActions, Button } from "@mui/material"
+import { Dialog, DialogTitle, IconButton, DialogContent, Box, Typography, DialogContentText, Switch, DialogActions, Button, TextField } from "@mui/material"
+import { useState } from "react"
 
 interface Props {
     handleClose: () => void
@@ -7,6 +8,8 @@ interface Props {
 }
 
 const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open }) => {
+    const [editedLoops, setEditedLoops] = useState(4);
+    const [editedShorts, setEditedShorts] = useState(2);
     return (
         <Dialog
             onClose={handleClose}
@@ -63,31 +66,37 @@ const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open }) => {
 
                     <Switch defaultChecked />
                 </Box>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                }}>
-                    <DialogContentText>
-                        Auto Start Breaks
-                    </DialogContentText>
-
-                    <Switch defaultChecked />
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <DialogContentText>How many long breaks</DialogContentText>
+                    <TextField
+                        type="number"
+                        value={editedLoops}
+                        onChange={(e) => setEditedLoops(parseInt(e.target.value, 10))}
+                    />
                 </Box>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                }}>
-                    <DialogContentText>
-                        Auto Start Breaks
-                    </DialogContentText>
-
-                    <Switch defaultChecked />
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <DialogContentText>How many short breaks before a long break</DialogContentText>
+                    <TextField
+                        type="number"
+                        value={editedShorts}
+                        onChange={(e) => setEditedShorts(parseInt(e.target.value, 10))}
+                    />
                 </Box>
             </DialogContent>
             <DialogActions>
