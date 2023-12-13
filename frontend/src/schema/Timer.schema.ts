@@ -73,6 +73,17 @@ class Timer {
         }
     }
 
+    resetSession(): void {
+        this.time = 0;
+        this.timerIsRunning = false;
+        this.status = 0;
+        this.timer = null;
+        this.completedShorts = 0;
+        this.shortsNeeded = 1;
+        this.loopsNeeded = 4;
+        this.completedLoops = 0;
+    }
+
     reset(): void {
         if (this.completedLoops === this.loopsNeeded) {
             this.status = 0;

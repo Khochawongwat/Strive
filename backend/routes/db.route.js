@@ -30,6 +30,7 @@ DBRouter.put("/tasks/:taskId", async (req, res) => {
     try {
         const taskId = req.params.taskId
         const updatedTask = req.body
+        console.log(updatedTask)
         const updated = await updateTask(taskId, updatedTask)
         res.status(201).json(updated)
     } catch (error) {

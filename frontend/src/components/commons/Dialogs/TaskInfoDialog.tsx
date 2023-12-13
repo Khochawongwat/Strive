@@ -12,7 +12,6 @@ interface Props {
     handleClose: () => void;
     open: boolean;
     task: TaskClass;
-    handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
     handleUpdateSubtask: (taskId: string, subtaskId: string, updatedTask: Task) => Promise<Task>;
     subtasks: TaskClass[];
     setSubtasks: (subtasks: TaskClass[]) => void

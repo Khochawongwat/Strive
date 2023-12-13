@@ -8,9 +8,9 @@ import { Task, TaskClass } from "../../../schema/Task.schema";
 import TaskTagsComponent from "./TaskTagsComponent";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
+import { useDrag } from "react-dnd";
 interface Props {
     task: TaskClass;
-    handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
 }
 interface State extends SnackbarOrigin {
     openSnack: boolean
@@ -18,7 +18,7 @@ interface State extends SnackbarOrigin {
 }
 
 
-const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
+const TaskItem: React.FC<Props> = ({ task}) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [progress, setProgress] = useState(0)
     const [subtasks, setSubtasks] = useState<TaskClass[]>([])
@@ -28,6 +28,13 @@ const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
         vertical: 'top',
         horizontal: 'center',
     })
+    const [{ isDragging }, drag] = useDrag({
+        type: 'TASK_ITEM',
+        item: { task: task, preStatus: task.status },
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    });
     const { vertical, horizontal, openSnack, message } = snackState
 
     const handleSnackOpen = (message: String) => {
@@ -50,7 +57,6 @@ const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
             throw Error("Error updatig subtask: " + error)
         }
     };
-
 
     const handleDoubleClick = () => {
         handleOpenDialog();
@@ -85,71 +91,72 @@ const TaskItem: React.FC<Props> = ({ task, handleUpdatedTask }) => {
     }, [subtasks]);
 
     return (
-        <Box>
-            <Snackbar
-                autoHideDuration={3000}
-                anchorOrigin={{ vertical, horizontal }}
-                open={openSnack}
-                onClose={handleSnackClose}
-                key={vertical + horizontal}
-            >
-                <Alert onClose={handleSnackClose} severity={message.includes("Error") ? "error" : 'success'}>
-                    {message}
-                </Alert>
-            </Snackbar>
-            <animated.div style={slideAnimation}>
-
-                <Card
-                    onDoubleClick={handleDoubleClick}
-                    sx={{
-                        border: `1px solid ${dialogOpen ? myPalette[50] : 'transparent'}`,
-                        my: 1,
-                        borderRadius: '4px',
-                        background: myPalette[952],
-                        py: '12px',
-                        pl: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 3,
-                        cursor: 'pointer'
-                    }}
+        <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
+            <Box>
+                <Snackbar
+                    autoHideDuration={3000}
+                    anchorOrigin={{ vertical, horizontal }}
+                    open={openSnack}
+                    onClose={handleSnackClose}
+                    key={vertical + horizontal}
                 >
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'start',
-                        mr: '4px',
+                    <Alert onClose={handleSnackClose} severity={message.includes("Error") ? "error" : 'success'}>
+                        {message}
+                    </Alert>
+                </Snackbar>
+                <animated.div style={slideAnimation}>
+                    <Card
+                        onDoubleClick={handleDoubleClick}
+                        sx={{
+                            border: `1px solid ${dialogOpen ? myPalette[50] : 'transparent'}`,
+                            my: 1,
+                            borderRadius: '4px',
+                            background: myPalette[952],
+                            py: '12px',
+                            pl: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'start',
+                            mr: '4px',
 
-                    }}>
-                        <Typography
-                            fontSize="12px"
-                            color={myPalette[50]}
-                            fontWeight="500"
-                            sx={{
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitBoxOrient: 'vertical',
-                                WebkitLineClamp: 5,
-                                minHeight: '3em',
-                                maxHeight: '6em',
-                                wordWrap: 'break-word'
-                            }}
-                        >
-                            {task.description}
-                        </Typography>
-                        <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
-                    </Box>
-                    <TaskTagsComponent tags={task.tags} />
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        {progress === 100 ? <CheckCircleOutline color={progress === 100 ? "success" : "primary"} /> : <CircularProgress style={{ width: '24px', height: '24px' }} value={progress} variant="determinate" color={progress === 100 ? "success" : "primary"} />}
-                        {subtasks.length > 0 && <Typography sx={{ fontSize: '12px' }}>{`${subtasks.filter((subtask) => subtask.status === 3).length}/${subtasks.length}`}</Typography>}
-                    </Box>
-                    <TaskInfoDialog handleSnackOpen={handleSnackOpen} setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleUpdatedTask={handleUpdatedTask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />
-                </Card>
-            </animated.div>
-        </Box>
+                        }}>
+                            <Typography
+                                fontSize="12px"
+                                color={myPalette[50]}
+                                fontWeight="500"
+                                sx={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    display: '-webkit-box',
+                                    WebkitBoxOrient: 'vertical',
+                                    WebkitLineClamp: 5,
+                                    minHeight: '3em',
+                                    maxHeight: '6em',
+                                    wordWrap: 'break-word'
+                                }}
+                            >
+                                {task.description}
+                            </Typography>
+                            <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
+                        </Box>
+                        <TaskTagsComponent tags={task.tags} />
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            {progress === 100 ? <CheckCircleOutline color={progress === 100 ? "success" : "primary"} /> : <CircularProgress style={{ width: '24px', height: '24px' }} value={progress} variant="determinate" color={progress === 100 ? "success" : "primary"} />}
+                            {subtasks.length > 0 && <Typography sx={{ fontSize: '12px' }}>{`${subtasks.filter((subtask) => subtask.status === 3).length}/${subtasks.length}`}</Typography>}
+                        </Box>
+                        <TaskInfoDialog handleSnackOpen={handleSnackOpen} setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />
+                    </Card>
+                </animated.div>
+            </Box>
+        </div>
     );
 };
 

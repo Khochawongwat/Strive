@@ -9,7 +9,7 @@ import axios from 'axios';
 import { TASKS_ENDPOINTS } from '../../../utils/endpoints';
 import { getAuth } from '@firebase/auth';
 import { firebaseApp } from '../../../apps/firebase.app';
-
+import { useDrop } from 'react-dnd';
 interface Props {
     id: string;
     maxHeight?: number | string;
@@ -20,7 +20,7 @@ interface Props {
     list: TaskClass[];
     preStatus: number;
     updateDeletedTaskLists: (status: number) => void
-    handleUpdatedTask: (newTask: TaskClass, prevTask: TaskClass) => void
+    handleRemoveTask: (task: TaskClass) => void
     loading: boolean
 }
 
@@ -34,7 +34,7 @@ interface State extends SnackbarOrigin {
     message: String
 }
 
-const TaskColumnContainer: React.FC<Props> = ({handleUpdatedTask, loading, updateDeletedTaskLists, list, title, handleAddTask, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
+const TaskColumnContainer: React.FC<Props> = ({handleRemoveTask, loading, updateDeletedTaskLists, list, title, handleAddTask, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
     const [dialogStates, setDialogStates] = useState<DialogStates>({
         taskCreationDialog: false,
         settingsDialog: false,
@@ -48,7 +48,34 @@ const TaskColumnContainer: React.FC<Props> = ({handleUpdatedTask, loading, updat
     )
     const { vertical, horizontal, open, message } = snackState
     const [deleting, setDeleting] = useState(false)
+    const [{ isOver }, drop] = useDrop({
+        accept: 'TASK_ITEM',
+        drop: (item: { task: TaskClass, preStatus: number }) => {
+            const { task: droppedTask, preStatus: sourceColumn } = item;
+            if (preStatus !== sourceColumn && !hidden) {
+                swapTask(droppedTask, {
+                    ...droppedTask,
+                    status: preStatus
+                } as TaskClass)
+            }
+        },
+        collect: (monitor) => ({
+            isOver: !!monitor.isOver(),
+        }),
+    });
 
+    const swapTask = async (prevTask: TaskClass, newTask: TaskClass) => {
+        if (!loading) {
+            try {
+                const response = await axios.put(`${TASKS_ENDPOINTS.tasks}/${prevTask._id}`, newTask)
+                await handleAddTask(newTask)
+                await handleRemoveTask(prevTask)
+                console.log(response.data)
+            } catch (error) {
+                console.error("Error swapping task:", error);
+            }
+        }
+    };
     const handleOpenSnack = (message: String) => {
         setSnackState({ ...snackState, open: true, message: message })
     }
@@ -102,7 +129,8 @@ const TaskColumnContainer: React.FC<Props> = ({handleUpdatedTask, loading, updat
     }
 
     return (
-        <Grid item xs={12} sm={6} md={4} lg={3} sx={{ opacity: hidden ? 0.6 : 1 }}>
+
+        <Grid ref={drop} item xs={12} sm={6} md={4} lg={3} sx={{ opacity: hidden ? 0.6 : 1 }}>
             <Snackbar
                 autoHideDuration={3000}
                 anchorOrigin={{ vertical, horizontal }}
@@ -136,10 +164,10 @@ const TaskColumnContainer: React.FC<Props> = ({handleUpdatedTask, loading, updat
                         </Box>
                     </Box>
                     {loading ? (
-                        <Box sx = {{display: 'flex', justifyContent:'center', height: '6rem', alignItems: 'center'}}>
-                            {!hidden && <CircularProgress style={{width: '2.5rem', height: '2.5rem', opacity: '.5'}}/>}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', height: '6rem', alignItems: 'center' }}>
+                            {!hidden && <CircularProgress style={{ width: '2.5rem', height: '2.5rem', opacity: '.5' }} />}
                         </Box>) : (!hidden && list.map((task, index) => (
-                            <TaskItem handleUpdatedTask = {handleUpdatedTask} key={index} task={task} />
+                            <TaskItem key={index} task={task} />
                         )))}
                     {!hidden && <Button onClick={() => handleOpenDialog('taskCreationDialog')} sx={{ background: myPalette[400], color: myPalette[50], alignItems: 'center', py: '0px' }}>
                         <AddOutlined />

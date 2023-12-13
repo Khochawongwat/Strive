@@ -57,35 +57,6 @@ const TaskBoard: React.FC<Props> = ({ }) => {
     const handleCloseDialog = () => {
         setDialogOpen(false);
     };
-    
-    const handleUpdatedTask = async (newTask: TaskClass, prevTask: TaskClass) => {
-        setLoading(true);
-        try {
-            try {
-                switch (prevTask.status) {
-                    case 0:
-                        setTodoList((prevTodoList) => prevTodoList.filter((task) => task._id !== prevTask._id));
-                        break;
-                    case 1:
-                        setProgressList((prevProgressList) => prevProgressList.filter((task) => task._id !== prevTask._id));
-                        break;
-                    case 2:
-                        setOnHoldList((prevOnHoldList) => prevOnHoldList.filter((task) => task._id !== prevTask._id));
-                        break;
-                    default:
-                        setCompletedList((prevCompletedList) => prevCompletedList.filter((task) => task._id !== prevTask._id));
-                        break;
-                }
-            } catch (error) {
-                console.error("Error removing task:", error);
-            }
-        } catch (error) {
-            console.error("Error updating task:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
 
     const handleAddTask = async (newTask: TaskClass) => {
         try {
@@ -105,14 +76,38 @@ const TaskBoard: React.FC<Props> = ({ }) => {
                 default:
                     break;
             }
-            
+
             return newTask
         } catch (error) {
             console.error("Error adding task:", error);
             throw new Error(error as string)
         }
     };
-    
+
+    const handleRemoveTask = async (task: TaskClass) => {
+        try {
+            switch (task.status) {
+                case 0:
+                    setTodoList((prevTodoList) => prevTodoList.filter((t) => t._id !== task._id));
+                    break;
+                case 1:
+                    setProgressList((prevProgressList) => prevProgressList.filter((t) => t._id !== task._id));
+                    break;
+                case 2:
+                    setOnHoldList((prevOnHoldList) => prevOnHoldList.filter((t) => t._id !== task._id));
+                    break;
+                case 3:
+                    setCompletedList((prevCompletedList) => prevCompletedList.filter((t) => t._id !== task._id));
+                    break;
+                default:
+                    break;
+            }
+        } catch (error) {
+            console.error("Error removing task:", error);
+            throw new Error(error as string);
+        }
+    };
+
     const updateDeletedTaskLists = (status: number) => {
         if (status === 0) {
             setTodoList([])
@@ -208,7 +203,7 @@ const TaskBoard: React.FC<Props> = ({ }) => {
     useEffect(() => {
         fetchTasks()
     }, [])
-    
+
     return (
         <Box display='flex' flexDirection="column" gap={3}>
             <Box display='flex' flexDirection="row" justifyContent="space-between">
@@ -225,16 +220,16 @@ const TaskBoard: React.FC<Props> = ({ }) => {
             <TaskSearchBar setSearchQuery={setSearchQuery} />
             <Grid container spacing={2}>
                 {/* To Do */}
-                <TaskContainer handleUpdatedTask={handleUpdatedTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="todo" handleAddTask={handleAddTask} hidden={hiddenStates['todo']} handleHiddenStates={handleHiddenStates} title={"TO DO"} list={todoList} preStatus={0} />
+                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="todo" handleAddTask={handleAddTask} hidden={hiddenStates['todo']} handleHiddenStates={handleHiddenStates} title={"TO DO"} list={todoList} preStatus={0} />
 
                 {/* In Progress */}
-                <TaskContainer handleUpdatedTask={handleUpdatedTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="progress" handleAddTask={handleAddTask} hidden={hiddenStates['progress']} handleHiddenStates={handleHiddenStates} title={"IN PROGRESS"} list={progressList} preStatus={1} />
+                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="progress" handleAddTask={handleAddTask} hidden={hiddenStates['progress']} handleHiddenStates={handleHiddenStates} title={"IN PROGRESS"} list={progressList} preStatus={1} />
 
                 {/* On Hold */}
-                <TaskContainer handleUpdatedTask={handleUpdatedTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="onHold" handleAddTask={handleAddTask} hidden={hiddenStates['onHold']} handleHiddenStates={handleHiddenStates} title={"ON HOLD"} list={onHoldList} preStatus={2} />
+                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="onHold" handleAddTask={handleAddTask} hidden={hiddenStates['onHold']} handleHiddenStates={handleHiddenStates} title={"ON HOLD"} list={onHoldList} preStatus={2} />
 
                 {/* Completed */}
-                <TaskContainer handleUpdatedTask={handleUpdatedTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="completed" handleAddTask={handleAddTask} hidden={hiddenStates['completed']} handleHiddenStates={handleHiddenStates} title={" COMPLETED"} list={completedList} preStatus={3} />
+                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="completed" handleAddTask={handleAddTask} hidden={hiddenStates['completed']} handleHiddenStates={handleHiddenStates} title={" COMPLETED"} list={completedList} preStatus={3} />
             </Grid>
             <TaskCreationDialog handleClose={handleCloseDialog} open={dialogOpen} updateTaskLists={handleAddTask} />
         </Box>

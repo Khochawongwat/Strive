@@ -78,6 +78,8 @@ const TaskCreationDialog: React.FC<Props> = ({ handleClose, open, preStatus, upd
             priority: Priority.Lowest,
             status: preStatus ? preStatus : 0,
             tags: [],
+            subtasks: [],
+            manual: false,
             dueDate: '',
         },
         validationSchema: validationSchema,

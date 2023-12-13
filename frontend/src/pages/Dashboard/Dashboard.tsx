@@ -7,6 +7,8 @@ import TasksBoard from '../../components/features/TaskBoard/TaskBoard';
 import { User } from '@firebase/auth';
 import Timer from '../../schema/Timer.schema';
 import PomoBoard from '../../components/features/Pomodoro/PomoBoard';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ const DashboardPage = () => {
             try {
                 const parsedTimer = JSON.parse(savedTimer);
                 const timerInstance = new Timer();
-                
+
                 timerInstance.time = parsedTimer.time;
                 timerInstance.timerIsRunning = parsedTimer.timerIsRunning;
                 timerInstance.isPomo = parsedTimer.isPomo;
@@ -41,7 +43,7 @@ const DashboardPage = () => {
             }
         }
     }, []);
-    
+
     useEffect(() => {
         const intervalId = setInterval(() => {
             setTime(timer.time);
@@ -93,32 +95,35 @@ const DashboardPage = () => {
     }
 
     return (
-        <Box
-            sx={{
-                height: '100vh',
-                width: '100vw',
-                display: 'flex',
-                flexDirection: 'column',
-                userSelect: 'none'
-            }}
-        >
-            <NavAppBar timer={timer} timeStates={{ time: time, running: isRunning }} />
-            <Paper
-                component={Box}
-                square
+        <DndProvider backend={HTML5Backend}>
+            <Box
                 sx={{
-                    flexGrow: 1,
-                    overflowY: 'scroll',
-                    px: '12.5%',
-                    pt: '6.25%'
+                    height: '100vh',
+                    width: '100vw',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    userSelect: 'none'
                 }}
             >
-                <Box sx = {{display: 'flex', flexDirection: 'row', gap: '24px'}}>
-                    <PomoBoard timer={timer} timeStates={{ time: time, running: isRunning, status: status, done: isSessionDone}} />
-                </Box>
-                <TasksBoard />
-            </Paper>
-        </Box>
+                <NavAppBar timer={timer} timeStates={{ time: time, running: isRunning }} />
+                <Paper
+                    component={Box}
+                    square
+                    sx={{
+                        flexGrow: 1,
+                        overflowY: 'scroll',
+                        px: '12.5%',
+                        pt: '6.25%'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: '24px' }}>
+                        <PomoBoard timer={timer} timeStates={{ time: time, running: isRunning, status: status, done: isSessionDone }} />
+                    </Box>
+                    <TasksBoard />
+                </Paper>
+            </Box>
+        </DndProvider>
+
     );
 }
 
