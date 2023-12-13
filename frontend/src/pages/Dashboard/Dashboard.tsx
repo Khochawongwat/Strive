@@ -71,7 +71,7 @@ const DashboardPage = () => {
                     pt: '6.25%'
                 }}
             >
-                <PomoBoard />
+                <PomoBoard timerState = {{timer: timer, timerIsRunning: timerIsRunning}}/>
                 <TasksBoard />
             </Paper>
         </Box>

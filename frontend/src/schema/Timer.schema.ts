@@ -1,3 +1,57 @@
+
+class Timer {
+    private timer: NodeJS.Timeout | null;
+    public time: number;
+    public timerIsRunning: boolean;
+    public isPomo: boolean;
+    public sessionDuration: number;
+
+    private callbacks: {
+        onStart?: () => void;
+        onTick?: (time: number) => void;
+        onPause?: () => void;
+        onReset?: () => void;
+        onComplete?: () => void;
+    };
+    constructor() {
+        this.time = 25 * 60;
+        this.timerIsRunning = false;
+        this.isPomo = true;
+        this.timer = null;
+        this.sessionDuration = this.time
+        this.callbacks = {};
+    }
+    setCallbacks(callbacks: Partial<Pomo['callbacks']>): void {
+        this.callbacks = { ...this.callbacks, ...callbacks };
+    }
+
+    start(): void {
+        if (!this.timerIsRunning) {
+            this.timerIsRunning = true;
+            this.timer = setInterval(() => this.tick(), 1000);
+            if (this.callbacks.onStart) this.callbacks.onStart();
+        }
+    }
+
+    completeSession(): void {
+        if (this.timer) clearInterval(this.timer);
+        this.timerIsRunning = false;
+        if (this.callbacks.onComplete) this.callbacks.onComplete();
+    }
+
+    tick(): void {
+        if (this.timerIsRunning) {
+            this.time = this.time + 1
+            this.callbacks
+            const timeRemaining = this.sessionDuration - this.time
+            if (this.callbacks.onTick) this.callbacks.onTick(this.time);
+            if (this.isPomo && timeRemaining <= 0) {
+                this.completeSession()
+            }
+        }
+    }
+}
+
 class Pomo {
     private sessionDuration: number;
     private breakDuration: number;
@@ -73,4 +127,4 @@ class Pomo {
     }
 }
 
-export default Pomo;
+export default Timer;

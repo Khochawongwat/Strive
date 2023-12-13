@@ -1,49 +1,24 @@
 import { useEffect, useState } from "react";
-import { Grid, Button, Box, Typography } from "@mui/material";
+import { Grid, Button, Box, Typography, IconButton } from "@mui/material";
 import { myPalette } from "../../../theme";
-import Pomo from "../../../schema/Pomo.schema";
+import { MoreHorizOutlined, Pause, PlayArrow, Replay } from "@mui/icons-material";
+import { formatTime } from "../../../utils/helper";
+import Timer from "../../../schema/Timer.schema";
 
-const PomoBoard = () => {
+interface Props {
+  timerState: {
+    timer: number,
+    timerIsRunning: boolean
+  }
+}
+
+const PomoBoard: React.FC<Props> = ({ timerState }) => {
   const [selectedTask, setSelectedTask] = useState(0);
-  const [pomoSession, setPomoSession] = useState<Pomo | null>(null);
-  const tasks = ["Select a task", "Set a timer", "Take a break"];
-  const [remainingTime, setRemainingTime] = useState<number>(0)
+  const [timerSession, setTimerSession] = useState<Timer | null>(null);
 
   useEffect(() => {
-    const savedPomo = localStorage.getItem("pomodoro")
-    if (savedPomo && savedPomo.length > 0) {
-      const pomo = new Pomo(JSON.parse(savedPomo))
-      pomo.setCallbacks({
-        onTick: (time: number) => setRemainingTime(time),
-        onStart: () => console.log('Pomo session started!'),
-        onPause: () => console.log('Pomo session paused!'),
-        onReset: () => console.log('Pomo session reset!'),
-        onComplete: () => console.log('Pomo session completed!'),
-      });
 
-      setPomoSession(pomo);
-
-      return () => {
-        if (pomoSession) {
-          pomoSession.reset()
-          pomoSession.start()
-        };
-      };
-    }
-  }, []);
-
-  const startPomoSession = () => {
-    const newPomoSession = new Pomo();
-    setPomoSession(newPomoSession);
-    localStorage.setItem("pomodoro", JSON.stringify(newPomoSession));
-  };
-
-  const handleStop = () => {
-    localStorage.removeItem("pomodoro");
-    setPomoSession(null);
-    console.log("Removed");
-  };
-
+  }, [])
 
   return (
     <Grid
@@ -58,20 +33,35 @@ const PomoBoard = () => {
     >
       <Grid item xs={12} display="flex" justifyContent="center" flexDirection="column" alignItems="center">
         <Box display="flex" justifyContent="center" flexDirection="column" px="32px" py="16px">
-          {pomoSession ? <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-            <Button>Pomodoro</Button>
-            <Button>Short Break</Button>
-            <Button>Long Break</Button>
+          {timerSession ? <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: '12px' }}>
+              <Button disabled={selectedTask === 0 ? true : false} sx={{ px: '32px', bgcolor: selectedTask === 0 ? myPalette[950] : myPalette[400], color: myPalette[50] }}>Pomodoro</Button>
+              <Button disabled={selectedTask === 1 ? true : false} sx={{ px: '32px', bgcolor: selectedTask === 1 ? myPalette[950] : myPalette[400], color: myPalette[50] }}>Short Break</Button>
+              <Button disabled={selectedTask === 2 ? true : false} sx={{ px: '32px', bgcolor: selectedTask === 2 ? myPalette[950] : myPalette[400], color: myPalette[50] }}>Long Break</Button>
+            </Box>
           </Box> : null}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-            {pomoSession ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {timerSession ? (
               <>
                 <Typography sx={{ fontSize: '6rem' }}>
-                  25:00
+                  {formatTime(timerState.timer)}
                 </Typography>
               </>
             ) : null}
-            <Button onClick={startPomoSession}>Start</Button>
+            <Grid item sx={{ display: 'flex', gap: '12px' }}>
+              <IconButton>
+                <Replay />
+              </IconButton>
+              {timerState.timerIsRunning ? <IconButton>
+                <Pause />
+              </IconButton> : <IconButton>
+                <PlayArrow />
+              </IconButton>
+              }
+              <IconButton>
+                <MoreHorizOutlined />
+              </IconButton>
+            </Grid>
           </Box>
         </Box>
       </Grid>

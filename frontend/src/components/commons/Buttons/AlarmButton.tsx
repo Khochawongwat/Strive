@@ -5,6 +5,7 @@ import { Timer, MoreHorizOutlined, Close, PlayArrowOutlined, TimerOutlined, Repl
 import AlarmSettingsDialog from "../Dialogs/AlarmSettingsDialog";
 import TaskListsDialog from "../Dialogs/TaskListsDialog";
 import { myPalette } from "../../../theme";
+import { formatTime } from "../../../utils/helper";
 
 interface AlarmState {
     openAlarm: boolean;
@@ -113,14 +114,6 @@ const AlarmButton: React.FC<Props> = ({ timer, setTimer, timerIsRunning, setTime
             localStorage.setItem('timer', JSON.stringify(0))
         }
     }
-
-    const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = seconds % 60;
-
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-    };
 
     return (
         <>
