@@ -1,4 +1,4 @@
-import { Box, Paper } from '@mui/material';
+import { Box, CircularProgress, Paper } from '@mui/material';
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { firebaseAuth } from '../../services/auth.service';
@@ -90,7 +90,17 @@ const DashboardPage = () => {
     }
 
     if (loading) {
-        return <>Loading</>;
+        return (
+            <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                width="100vw"
+                height="100vh"
+            >
+                <CircularProgress />
+            </Box>
+        );
     }
 
     return (
@@ -122,7 +132,6 @@ const DashboardPage = () => {
                 </Paper>
             </Box>
         </DndProvider>
-
     );
 }
 

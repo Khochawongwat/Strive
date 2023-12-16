@@ -128,7 +128,7 @@ const AlarmButton: React.FC<Props> = ({ timer, timeStates}) => {
                     </Box>
                     <IconButton disableRipple color={"primary"} onClick={handleClose}><Close /></IconButton>
                     <TaskListsDialog handleClose={closeTasks} open={alarmState.openTasks} />
-                    <AlarmSettingsDialog handleClose={closeSettings} open={alarmState.openSettings} />
+                    <AlarmSettingsDialog timer = {timer} handleClose={closeSettings} open={alarmState.openSettings} />
                 </Box>
             ) : (
                 <IconButton

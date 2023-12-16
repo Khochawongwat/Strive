@@ -129,7 +129,7 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging }) => {
             }
             return timeString;
         };
-        
+
         if (typeof datetime === 'string') {
             datetime = new Date(datetime);
         }
@@ -138,7 +138,7 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging }) => {
             const remainingTimeInSeconds = Math.floor(remainingTime);
             return 'Due in ' + countDownFormat(remainingTimeInSeconds);
         }
-        return `Due ${countDownFormat(Math.floor(Math.abs(remainingTime)))} ago`;
+        return `${task.status === 3 ? 'Finished' : 'Due'} ${countDownFormat(Math.floor(Math.abs(remainingTime)))} ago`;
     };
 
     const slideAnimation = useSpring({
