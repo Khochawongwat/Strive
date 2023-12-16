@@ -1,9 +1,8 @@
-import { Box, Button, Grid, IconButton, Typography } from "@mui/material"
+import { Box, Button, Grid, Typography } from "@mui/material"
 import TaskContainer from "./TaskColumnContainer";
 import { Task, TaskClass } from "../../../schema/Task.schema";
-import TaskSearchBar from "./TaskSearchBar";
 import { useEffect, useState } from "react";
-import { Delete, DeleteForeverOutlined, MoreHorizOutlined } from "@mui/icons-material";
+import { Delete } from "@mui/icons-material";
 import TaskCreationDialog from "../../commons/Dialogs/TaskCreationDialog";
 import { myPalette, priorityPalette } from "../../../theme";
 import axios from "axios";
@@ -230,22 +229,21 @@ const TaskBoard: React.FC<Props> = ({ }) => {
 
     return (
         <Box display='flex' flexDirection="column" gap={3}>
-    
+
             <Delete
                 ref={drop}
                 sx={{
                     color: priorityPalette[4],
-                    visibility: anItemIsDragging ? 'visible' : 'hidden',
+                    visibility: 'visible',
                     position: 'fixed',
-                    bottom: 0,
+                    bottom: anItemIsDragging ? 0 : '-100%',
                     left: '50%',
-                    fontSize: '8rem',
+                    fontSize: '10rem',
                     zIndex: 9999,
-                    transition: 'bottom 0.125s ease-in-out',
+                    transition: 'bottom 0.2s ease-in-out',
                     transform: 'translateX(-50%)',
                 }}
             />
-
 
             <Box display='flex' flexDirection="row" alignItems='center' justifyContent="space-between">
                 <Box display='flex' flexDirection="row" alignItems='center'>

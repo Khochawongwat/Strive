@@ -1,10 +1,9 @@
 import * as React from 'react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
-import { Box, Grid, IconButton, Typography } from '@mui/material';
+import { Grid, IconButton, Typography } from '@mui/material';
 import { Close, Logout } from '@mui/icons-material';
 import { priorityPalette } from '../../../theme';
 import { firebaseAuth } from '../../../services/auth.service';
-import { firebaseApp } from '../../../apps/firebase.app';
 
 interface Props {
     state: boolean

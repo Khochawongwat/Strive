@@ -49,7 +49,7 @@ const TaskColumnContainer: React.FC<Props> = ({setAnItemIsDragging, handleRemove
     )
     const { vertical, horizontal, open, message } = snackState
     const [deleting, setDeleting] = useState(false)
-    const [{ isOver }, drop] = useDrop({
+    const [, drop] = useDrop({
         accept: 'TASK_ITEM',
         drop: (item: { task: TaskClass, preStatus: number }) => {
             const { task: droppedTask, preStatus: sourceColumn } = item;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Grid, Button, Box, Typography, IconButton } from "@mui/material";
 import { myPalette } from "../../../theme";
-import { KeyboardDoubleArrowLeft, KeyboardDoubleArrowRight, MoreHorizOutlined, Pause, PlayArrow, Replay, SkipNextOutlined, SkipPreviousOutlined, StopCircleOutlined, TimerOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
+import { KeyboardDoubleArrowLeft, KeyboardDoubleArrowRight, MoreHorizOutlined, Pause, PlayArrow, Replay, StopCircleOutlined, TimerOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { formatTime } from "../../../utils/helper";
 import Timer from "../../../schema/Timer.schema";
 import AlarmSettingsDialog from "../../commons/Dialogs/AlarmSettingsDialog";

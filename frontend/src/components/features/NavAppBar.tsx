@@ -1,10 +1,7 @@
-import { Box, Toolbar, IconButton, Typography, AppBar, Badge, Button } from "@mui/material";
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import { Box, Toolbar, IconButton, Typography, AppBar } from "@mui/material";
 import MoreIcon from '@mui/icons-material/MoreVert';
-import { AccountCircle, LocalFireDepartmentOutlined } from "@mui/icons-material";
+import { AccountCircle } from "@mui/icons-material";
 import AlarmButton from "../commons/Buttons/AlarmButton";
-import { getAuth } from "@firebase/auth";
-import { firebaseApp } from "../../apps/firebase.app";
 import Timer from "../../schema/Timer.schema";
 import AccountDrawer from "./AccountDrawer/AccountDrawer";
 import { useState } from "react";

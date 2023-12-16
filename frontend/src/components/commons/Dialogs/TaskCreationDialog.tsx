@@ -42,7 +42,7 @@ const validationSchema = Yup.object({
         }),
     priority: Yup.number().required("Priority is required"),
     status: Yup.number().required("Status is required"),
-    tags: Yup.array().of(Yup.string()),
+    tags: Yup.array().of(Yup.string()).max(MAX_TAGS_PER_TASK, `You can only select up to ${MAX_TAGS_PER_TASK} tags.`),
     dueDate: Yup.date(),
 });
 
@@ -199,7 +199,7 @@ const TaskCreationDialog: React.FC<Props> = ({ handleClose, open, preStatus, upd
 
                 {/* Tags */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <DialogContentText>Tags</DialogContentText>
+                    <DialogContentText sx={{ color: formik.errors['tags'] ? 'red' : '' }}>Tags ({formik.values['tags'].length}/{MAX_TAGS_PER_TASK})</DialogContentText>
                     <FormControl fullWidth variant="outlined">
                         <Select
                             multiple
@@ -233,7 +233,7 @@ const TaskCreationDialog: React.FC<Props> = ({ handleClose, open, preStatus, upd
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <DialogContentText>Due Date</DialogContentText>
                     <TextField
-                        type="date"
+                        type="datetime-local"
                         name="dueDate"
                         value={formik.values.dueDate}
                         onChange={formik.handleChange}

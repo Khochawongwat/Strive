@@ -1,13 +1,15 @@
-import { Alert, Box, Card, CircularProgress, LinearProgress, Snackbar, SnackbarOrigin, Typography } from "@mui/material";
+import { Alert, Box, Card, CircularProgress, Snackbar, SnackbarOrigin, Typography } from "@mui/material";
 import { myPalette, priorityPalette } from '../../../theme';
-import { ArrowBackIosNew, CheckCircleOutline, CompareArrowsOutlined, DragIndicatorOutlined, KeyboardArrowDown, KeyboardArrowDownOutlined, KeyboardArrowUpOutlined, KeyboardDoubleArrowDownOutlined, KeyboardDoubleArrowUpOutlined } from "@mui/icons-material";
+import { DragIndicatorOutlined, KeyboardArrowDownOutlined, KeyboardArrowUpOutlined, KeyboardDoubleArrowDownOutlined, KeyboardDoubleArrowUpOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import TaskInfoDialog from "../../commons/Dialogs/TaskInfoDialog";
 import { useSpring, animated } from 'react-spring';
-import { Task, TaskClass } from "../../../schema/Task.schema";
+import { TaskClass } from "../../../schema/Task.schema";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
 import { useDrag } from "react-dnd";
+import TaskTagsComponent from "./TaskTagsComponent";
+import { formatTime } from "../../../utils/helper";
 interface Props {
     task: TaskClass;
     setAnItemIsDragging: (isDragging: boolean) => void
@@ -18,7 +20,7 @@ interface State extends SnackbarOrigin {
 }
 
 
-const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
+const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [progress, setProgress] = useState(0)
     const [subtasks, setSubtasks] = useState<TaskClass[]>([])
@@ -28,6 +30,17 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
         vertical: 'top',
         horizontal: 'center',
     })
+    const [countdown, setCountdown] = useState<number>(Date.now() / 1000);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCountdown(prevCountdown => prevCountdown + 1);
+        }, 1000);
+
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, []);
 
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK_ITEM',
@@ -71,14 +84,14 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
         setSnackState({ ...snackState, openSnack: false, message: '' })
     }
 
-    const handleUpdateSubtask = async (taskId: string, subtaskId: string, updatedSubtask: Task) => {
+    const handleUpdateSubtask = async (taskId: string, subtaskId: string, updatedSubtask: TaskClass) => {
         try {
             const response = await axios.put(
                 `${TASKS_ENDPOINTS.tasks}/${taskId}/${subtaskId}`,
                 updatedSubtask
             );
             console.log("Subtask updated successfully:", response.data);
-            return response.data as Task
+            return response.data
         } catch (error) {
             throw Error("Error updatig subtask: " + error)
         }
@@ -94,6 +107,38 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
 
     const handleCloseDialog = () => {
         setDialogOpen(false);
+    };
+
+    const handleDateTime = (datetime: Date | string) => {
+        const countDownFormat = (seconds: number) => {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+        
+            let timeString = '';
+            if (days > 0) {
+                timeString += days > 1 ? `${days} days` : `${days} day`;
+            }
+            if (hours > 0) {
+                if (timeString) timeString += ', ';
+                timeString += hours > 1 ? `${hours} hours` : `${hours} hour`;
+            }
+            if (minutes > 0) {
+                if (timeString) timeString += ' and ';
+                timeString += minutes > 1 ? `${minutes} minutes` : `${minutes} minute`;
+            }
+            return timeString;
+        };
+        
+        if (typeof datetime === 'string') {
+            datetime = new Date(datetime);
+        }
+        const remainingTime = datetime.getTime() / 1000 - countdown;
+        if (remainingTime > 0 && remainingTime <= 48 * 60 * 60 * 1000) {
+            const remainingTimeInSeconds = Math.floor(remainingTime);
+            return 'Due in ' + countDownFormat(remainingTimeInSeconds);
+        }
+        return `Due ${countDownFormat(Math.floor(Math.abs(remainingTime)))} ago`;
     };
 
     const slideAnimation = useSpring({
@@ -186,19 +231,24 @@ const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
                             >
                                 {task.description}
                             </Typography>
+
                             <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
                         </Box>
+                        <TaskTagsComponent tags={task.tags} />
                         <Box sx={{ display: 'flex', gap: 1, pr: 2, alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', gap: 1 }}>
-                                {task.subtasks && task.subtasks.length > 0 && <CircularProgress
+                            {task.subtasks && task.subtasks.length > 0 && <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', gap: 1 }}>
+                                <CircularProgress
                                     style={{ width: '24px', height: '24px', position: 'absolute' }}
                                     value={progress}
                                     variant="determinate"
                                     sx={{
-                                        color:"success"
+                                        color: "success"
                                     }}
-                                />}
-                            </Box>
+                                />
+                            </Box>}
+                            <Typography color={myPalette[50]} fontSize="12px">
+                                {task.dueDate && handleDateTime(task.dueDate)}
+                            </Typography>
                             {getPriorityIcon(task.priority)}
                         </Box>
                         <TaskInfoDialog handleSnackOpen={handleSnackOpen} setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />

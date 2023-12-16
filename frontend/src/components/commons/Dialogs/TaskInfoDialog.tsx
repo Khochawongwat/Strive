@@ -12,7 +12,7 @@ interface Props {
     handleClose: () => void;
     open: boolean;
     task: TaskClass;
-    handleUpdateSubtask: (taskId: string, subtaskId: string, updatedTask: Task) => Promise<Task>;
+    handleUpdateSubtask: (taskId: string, subtaskId: string, updatedTask: TaskClass) => Promise<Task>;
     subtasks: TaskClass[];
     setSubtasks: (subtasks: TaskClass[]) => void
     handleSnackOpen: (message: string) => void
@@ -22,7 +22,7 @@ const validationSchema = Yup.object({
     subtaskInput: Yup.string().required('A description is needed').min(1, "Description must not be less than 1 character long"),
 });
 
-const TaskInfoDialog: React.FC<Props> = ({handleSnackOpen, handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
+const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
     const [showSubtasks, setShowSubtasks] = useState(task.subtasks && task.subtasks.length > 0 ? true : false)
     const [creatingTask, setCreatingTask] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -129,10 +129,10 @@ const TaskInfoDialog: React.FC<Props> = ({handleSnackOpen, handleClose, open, ta
                 const isChecked = e.target.checked;
                 const updatedSubtasks = [...subtasks];
                 const subtaskToUpdate = updatedSubtasks[index] as Task;
-                await handleUpdateSubtask(task._id, subtaskToUpdate._id, {
+                await handleUpdateSubtask(task._id, subtaskToUpdate._id, new TaskClass({
                     ...subtaskToUpdate,
                     status: isChecked ? 3 : 0,
-                });
+                }));
                 subtaskToUpdate.status = isChecked ? 3 : 0;
                 setSubtasks(updatedSubtasks);
             } catch (error) {
@@ -231,12 +231,12 @@ const TaskInfoDialog: React.FC<Props> = ({handleSnackOpen, handleClose, open, ta
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <TextField
                                     placeholder="Add an item"
-                                    name = "subtaskInput"
+                                    name="subtaskInput"
                                     value={formik.values['subtaskInput']}
                                     onChange={formik.handleChange}
                                 />
                                 <Box sx={{ display: 'flex', gap: 3 }}>
-                                    <Button sx={{ bgcolor: myPalette[400], color: myPalette[50] }} disabled = {Object.keys(formik.errors).length > 0 || formik.values['subtaskInput'].length === 0} onClick={addSubtask}>
+                                    <Button sx={{ bgcolor: myPalette[400], color: myPalette[50] }} disabled={Object.keys(formik.errors).length > 0 || formik.values['subtaskInput'].length === 0} onClick={addSubtask}>
                                         Add
                                     </Button>
                                     <Button disableRipple sx={{ color: myPalette[975] }} onClick={() => setCreatingTask(false)}>
