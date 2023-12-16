@@ -1,15 +1,28 @@
 import { CloseOutlined, AlarmOutlined } from "@mui/icons-material"
 import { Dialog, DialogTitle, IconButton, DialogContent, Box, Typography, DialogContentText, Switch, DialogActions, Button, TextField } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import Timer from "../../../schema/Timer.schema"
 
 interface Props {
     handleClose: () => void
     open: boolean
+    timer: Timer
 }
 
-const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open }) => {
-    const [editedLoops, setEditedLoops] = useState(4);
-    const [editedShorts, setEditedShorts] = useState(2);
+const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open, timer }) => {
+    const [editedLoops, setEditedLoops] = useState(timer.loopsNeeded);
+    const [editedShorts, setEditedShorts] = useState(timer.shortsNeeded);
+
+    const handleSaveChanges = () => {
+        timer.loopsNeeded = editedLoops;
+        timer.shortsNeeded = editedShorts;
+        console.log("Saved")
+    }
+
+    useEffect(() => {
+        handleSaveChanges()
+    }, [editedLoops, editedShorts])
+
     return (
         <Dialog
             onClose={handleClose}
@@ -98,10 +111,31 @@ const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open }) => {
                         onChange={(e) => setEditedShorts(parseInt(e.target.value, 10))}
                     />
                 </Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Button onClick={() => {
+                        setEditedLoops(4)
+                        setEditedShorts(3)
+                    }}>
+                        Reset to default
+                    </Button>
+                    <Button onClick={() => {
+                        timer.resetSession()
+                    }}>
+                        Restart Pomodoro
+                    </Button>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button autoFocus onClick={handleClose}>
-                    Save changes
+                    DONE
                 </Button>
             </DialogActions>
         </Dialog>

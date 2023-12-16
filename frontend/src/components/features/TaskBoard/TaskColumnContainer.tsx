@@ -21,6 +21,7 @@ interface Props {
     preStatus: number;
     updateDeletedTaskLists: (status: number) => void
     handleRemoveTask: (task: TaskClass) => void
+    setAnItemIsDragging: (isDragging: boolean) => void
     loading: boolean
 }
 
@@ -34,7 +35,7 @@ interface State extends SnackbarOrigin {
     message: String
 }
 
-const TaskColumnContainer: React.FC<Props> = ({handleRemoveTask, loading, updateDeletedTaskLists, list, title, handleAddTask, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
+const TaskColumnContainer: React.FC<Props> = ({setAnItemIsDragging, handleRemoveTask, loading, updateDeletedTaskLists, list, title, handleAddTask, preStatus, hidden, handleHiddenStates, id, maxHeight }) => {
     const [dialogStates, setDialogStates] = useState<DialogStates>({
         taskCreationDialog: false,
         settingsDialog: false,
@@ -76,6 +77,7 @@ const TaskColumnContainer: React.FC<Props> = ({handleRemoveTask, loading, update
             }
         }
     };
+    
     const handleOpenSnack = (message: String) => {
         setSnackState({ ...snackState, open: true, message: message })
     }
@@ -129,7 +131,6 @@ const TaskColumnContainer: React.FC<Props> = ({handleRemoveTask, loading, update
     }
 
     return (
-
         <Grid ref={drop} item xs={12} sm={6} md={4} lg={3} sx={{ opacity: hidden ? 0.6 : 1 }}>
             <Snackbar
                 autoHideDuration={3000}
@@ -167,7 +168,7 @@ const TaskColumnContainer: React.FC<Props> = ({handleRemoveTask, loading, update
                         <Box sx={{ display: 'flex', justifyContent: 'center', height: '6rem', alignItems: 'center' }}>
                             {!hidden && <CircularProgress style={{ width: '2.5rem', height: '2.5rem', opacity: '.5' }} />}
                         </Box>) : (!hidden && list.map((task, index) => (
-                            <TaskItem key={index} task={task} />
+                            <TaskItem setAnItemIsDragging = {setAnItemIsDragging} key={index} task={task} />
                         )))}
                     {!hidden && <Button onClick={() => handleOpenDialog('taskCreationDialog')} sx={{ background: myPalette[400], color: myPalette[50], alignItems: 'center', py: '0px' }}>
                         <AddOutlined />

@@ -4,6 +4,7 @@ import { myPalette } from "../../../theme";
 import { KeyboardDoubleArrowLeft, KeyboardDoubleArrowRight, MoreHorizOutlined, Pause, PlayArrow, Replay, SkipNextOutlined, SkipPreviousOutlined, StopCircleOutlined, TimerOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { formatTime } from "../../../utils/helper";
 import Timer from "../../../schema/Timer.schema";
+import AlarmSettingsDialog from "../../commons/Dialogs/AlarmSettingsDialog";
 
 interface Props {
   timer: Timer
@@ -19,7 +20,11 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
   const [selectedTask, setSelectedTask] = useState(timeStates.status);
   const [hidden, setHidden] = useState(false)
   const [blink, setBlink] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false)
 
+  const handleSettingsDialog = () => {
+    setOpenSettings(!openSettings)
+  }
   const handleTaskSelection = (index: number) => {
     if (index >= 0 && index <= 2) {
       setSelectedTask(index);
@@ -27,10 +32,10 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     setSelectedTask(timeStates.status)
   }, [timeStates])
-  
+
   useEffect(() => {
     let blinkInterval: NodeJS.Timeout | undefined;
 
@@ -134,7 +139,15 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
             <Typography sx={{ fontSize: '6rem' }}>
               {formatTime(timeStates.time)}
             </Typography>
-            <Grid item sx={{ display: 'flex', gap: '12px' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+              <Typography color={myPalette[400]}>
+                Short Breaks ({timer.completedShorts}/{timer.shortsNeeded})
+              </Typography>
+              <Typography color={myPalette[400]}>
+                Long Breaks ({timer.completedLoops}/{timer.loopsNeeded})
+              </Typography>
+            </Box>
+            <Grid item sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <IconButton onClick={resetTimer}>
                 <Replay />
               </IconButton>
@@ -161,9 +174,10 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
               <IconButton onClick={addTime}>
                 <KeyboardDoubleArrowRight />
               </IconButton>
-              <IconButton>
+              <IconButton onClick={handleSettingsDialog}>
                 <MoreHorizOutlined />
               </IconButton>
+
             </Grid>
           </Box>
         </Box> : <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'start', height: '2rem' }}>
@@ -178,6 +192,7 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
           </IconButton>
         </Box>}
       </Grid>
+      <AlarmSettingsDialog handleClose={handleSettingsDialog} open={openSettings} timer={timer} />
     </Grid>
   );
 };

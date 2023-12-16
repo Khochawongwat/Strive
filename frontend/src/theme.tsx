@@ -12,6 +12,14 @@ export const defaultTheme = createTheme({
   },
 })
 
+export const priorityPalette = {
+  0: "#8BC34A",
+  1: "#CDDC39",
+  2: "#FFEB3B",
+  3: "#FF9800",
+  4: "#F44336",
+}
+
 export const myPalette = {
   1000: "#2D2D2D",
   925: "#7A7A7A",

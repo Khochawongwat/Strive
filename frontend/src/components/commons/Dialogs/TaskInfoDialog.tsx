@@ -22,7 +22,7 @@ const validationSchema = Yup.object({
     subtaskInput: Yup.string().required('A description is needed').min(1, "Description must not be less than 1 character long"),
 });
 
-const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
+const TaskInfoDialog: React.FC<Props> = ({handleSnackOpen, handleClose, open, task, subtasks, setSubtasks, handleUpdateSubtask }) => {
     const [showSubtasks, setShowSubtasks] = useState(task.subtasks && task.subtasks.length > 0 ? true : false)
     const [creatingTask, setCreatingTask] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -109,8 +109,8 @@ const TaskInfoDialog: React.FC<Props> = ({ handleSnackOpen, handleClose, open, t
                 const response = await axios.post(TASKS_ENDPOINTS.tasks + `/${task._id}`,
                     subtask
                 )
-
                 handleSnackOpen(`Successfully added a subtask {${(subtask.description as string).slice(0, 6)}....}`)
+                console.log(`Successfully added a subtask ${response.data.subtasks}`)
                 setSubtasks(response.data.subtasks)
                 formik.resetForm()
             } catch (error) {

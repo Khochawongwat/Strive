@@ -18,8 +18,32 @@ const DashboardPage = () => {
     const [time, setTime] = useState(timer.time)
     const [isRunning, setIsRunning] = useState(timer.timerIsRunning)
     const [isSessionDone, setIsSessionDone] = useState(false)
-
     const [status, setStatus] = useState(timer.status)
+
+    const handleAuthStateChanged = async (user: User | null) => {
+        if (user) {
+            try {
+                const token = await user.getIdToken();
+                console.log("User found via Firebase");
+                setToken(token)
+            } catch (error: any) {
+                console.error('Error getting user token:', error.message);
+            }
+        } else {
+            console.log("No user signed in.");
+            setToken('')
+        }
+        setSuccess(true)
+        setLoading(false)
+    };
+    
+    useEffect(() => {
+        const unsubscribe = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
+    
+        return () => {
+            unsubscribe()
+        };
+    }, []);
 
     useEffect(() => {
         const savedTimer = localStorage.getItem("timer");
@@ -57,31 +81,6 @@ const DashboardPage = () => {
             clearInterval(intervalId);
         };
     }, [timer.time, timer.timerIsRunning, timer]);
-
-    useEffect(() => {
-        const handleAuthStateChanged = async (user: User | null) => {
-            if (user) {
-                try {
-                    const token = await user.getIdToken();
-                    console.log("User found via Firebase");
-                    setToken(token)
-                } catch (error: any) {
-                    console.error('Error getting user token:', error.message);
-                }
-            } else {
-                console.log("No user signed in.");
-            }
-            setSuccess(true)
-            setLoading(false)
-        };
-
-        const unsubscribe = firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
-
-        return () => {
-            unsubscribe()
-        };
-
-    }, [token]);
 
     const shouldRedirect = token.length === 0 && success && !loading;
 

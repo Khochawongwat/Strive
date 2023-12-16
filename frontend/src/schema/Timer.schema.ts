@@ -19,7 +19,7 @@ class Timer {
     };
 
     constructor() {
-        this.time = 0;
+        this.time = 25 * 60;
         this.timerIsRunning = false;
         this.status = 0;
         this.sessionDurations = [25 * 60, 5 * 60, 10 * 60];
@@ -28,7 +28,7 @@ class Timer {
         this.callbacks = {};
         this.autoStart = false;
         this.completedShorts = 0;
-        this.shortsNeeded = 1;
+        this.shortsNeeded = 3;
         this.loopsNeeded = 4;
         this.completedLoops = 0;
     }
@@ -74,12 +74,12 @@ class Timer {
     }
 
     resetSession(): void {
-        this.time = 0;
+        this.time = 25 * 60;
         this.timerIsRunning = false;
         this.status = 0;
         this.timer = null;
         this.completedShorts = 0;
-        this.shortsNeeded = 1;
+        this.shortsNeeded = 3;
         this.loopsNeeded = 4;
         this.completedLoops = 0;
     }

@@ -20,7 +20,7 @@ async function updateTask(taskId, updatedTask) {
         const collection = database.collection('Tasks');
 
         const { _id, ...updatedTaskWithoutId } = updatedTask;
-        
+
         const toBeUpdatedTask = {
             ...updatedTaskWithoutId,
             subtasks: updatedTaskWithoutId.subtasks.map(subtask => ({
@@ -56,7 +56,7 @@ async function updateSubtask(taskId, subtaskId, updatedSubtask) {
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Tasks');
         const result = await collection.findOneAndUpdate(
-            { _id: new ObjectId(taskId), 'subtasks._id': new ObjectId(subtaskId)},
+            { _id: new ObjectId(taskId), 'subtasks._id': new ObjectId(subtaskId) },
             { $set: { 'subtasks.$': objectedSubtask } },
             { returnDocument: 'after' }
         );
@@ -77,10 +77,14 @@ async function createSubtask(taskId, subtask) {
         if (existingTask) {
             const updatedTask = await collection.findOneAndUpdate(
                 { _id: new ObjectId(taskId) },
-                { $push: { subtasks: {
-                    _id: new ObjectId(),
-                    ...subtask,
-                } } },
+                {
+                    $push: {
+                        subtasks: {
+                            _id: new ObjectId(),
+                            ...subtask,
+                        }
+                    }
+                },
                 { returnDocument: 'after' }
             );
             return updatedTask;
@@ -134,8 +138,13 @@ async function deleteTaskById(taskId) {
     try {
         const database = client.db(DATABASE_NAME);
         const collection = database.collection('Tasks');
-        const result = await collection.findOneAndDelete({ _id: taskId })
-        return { ...result, task: taskId }
+        const result = await collection.findOneAndDelete({ _id: new ObjectId(taskId) })
+        if (!result) {
+            const error = new Error("Task not found")
+            console.error("Error deleting task in MongoDB: ", error)
+            throw error
+        }
+        return { ...result }
     } catch (error) {
         console.error("Error deleting task in MongoDB: ", error)
         throw error

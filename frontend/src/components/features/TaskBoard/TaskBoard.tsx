@@ -3,13 +3,14 @@ import TaskContainer from "./TaskColumnContainer";
 import { Task, TaskClass } from "../../../schema/Task.schema";
 import TaskSearchBar from "./TaskSearchBar";
 import { useEffect, useState } from "react";
-import { MoreHorizOutlined } from "@mui/icons-material";
+import { Delete, DeleteForeverOutlined, MoreHorizOutlined } from "@mui/icons-material";
 import TaskCreationDialog from "../../commons/Dialogs/TaskCreationDialog";
-import { myPalette } from "../../../theme";
+import { myPalette, priorityPalette } from "../../../theme";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
 import { getAuth } from "@firebase/auth";
 import { firebaseApp } from "../../../apps/firebase.app";
+import { useDrop } from "react-dnd";
 
 interface Props {
 }
@@ -22,7 +23,6 @@ interface ColumnHiddenStates {
 }
 
 const TaskBoard: React.FC<Props> = ({ }) => {
-    const [_, setSearchQuery] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [todoList, setTodoList] = useState<TaskClass[]>([]);
     const [progressList, setProgressList] = useState<TaskClass[]>([]);
@@ -49,6 +49,7 @@ const TaskBoard: React.FC<Props> = ({ }) => {
         }
     });
     const [loading, setLoading] = useState(false)
+    const [anItemIsDragging, setAnItemIsDragging] = useState(false)
 
     const handleCreate = () => {
         setDialogOpen(true);
@@ -58,33 +59,31 @@ const TaskBoard: React.FC<Props> = ({ }) => {
         setDialogOpen(false);
     };
 
-    const handleAddTask = async (newTask: TaskClass) => {
+    const handleAddTask = (newTask: TaskClass) => {
         try {
             switch (newTask.status) {
                 case 0:
-                    setTodoList((prevTodoList) => [...prevTodoList, newTask]);
+                    setTodoList((prevTodoList) => [...prevTodoList, newTask].sort((a, b) => b.priority - a.priority));
                     break;
                 case 1:
-                    setProgressList((prevProgressList) => [...prevProgressList, newTask]);
+                    setProgressList((prevProgressList) => [...prevProgressList, newTask].sort((a, b) => b.priority - a.priority));
                     break;
                 case 2:
-                    setOnHoldList((prevOnHoldList) => [...prevOnHoldList, newTask]);
+                    setOnHoldList((prevOnHoldList) => [...prevOnHoldList, newTask].sort((a, b) => b.priority - a.priority));
                     break;
                 case 3:
-                    setCompletedList((prevCompletedList) => [...prevCompletedList, newTask]);
+                    setCompletedList((prevCompletedList) => [...prevCompletedList, newTask].sort((a, b) => b.priority - a.priority));
                     break;
                 default:
                     break;
             }
-
-            return newTask
         } catch (error) {
             console.error("Error adding task:", error);
             throw new Error(error as string)
         }
     };
 
-    const handleRemoveTask = async (task: TaskClass) => {
+    const handleRemoveTask = (task: TaskClass) => {
         try {
             switch (task.status) {
                 case 0:
@@ -107,6 +106,15 @@ const TaskBoard: React.FC<Props> = ({ }) => {
             throw new Error(error as string);
         }
     };
+
+    const removeTaskFromServer = async (task: TaskClass) => {
+        try {
+            await axios.delete(`${TASKS_ENDPOINTS.tasks}/${task._id}`)
+            handleRemoveTask(task)
+        } catch (error) {
+            console.error(`Failed to delete task: ${error}`);
+        }
+    }
 
     const updateDeletedTaskLists = (status: number) => {
         if (status === 0) {
@@ -182,23 +190,39 @@ const TaskBoard: React.FC<Props> = ({ }) => {
                 const tasks = response.data;
 
                 const todoList = tasks.filter((task: Task) => task.status === 0).map((task: Task) => new TaskClass(task));
-                const progressList = tasks.filter((task: Task) => task.status === 1).map((task: Task) => new TaskClass(task));
-                const onHoldList = tasks.filter((task: Task) => task.status === 2).map((task: Task) => new TaskClass(task));
-                const completedList = tasks.filter((task: Task) => task.status === 3).map((task: Task) => new TaskClass(task));
+                todoList.sort((a: TaskClass, b: TaskClass) => b.priority - a.priority); // sort by priority
 
+                const progressList = tasks.filter((task: Task) => task.status === 1).map((task: Task) => new TaskClass(task));
+                progressList.sort((a: TaskClass, b: TaskClass) => b.priority - a.priority); // sort by priority
+
+                const onHoldList = tasks.filter((task: Task) => task.status === 2).map((task: Task) => new TaskClass(task));
+                onHoldList.sort((a: TaskClass, b: TaskClass) => b.priority - a.priority); // sort by priority
+
+                const completedList = tasks.filter((task: Task) => task.status === 3).map((task: Task) => new TaskClass(task));
+                completedList.sort((a: TaskClass, b: TaskClass) => b.priority - a.priority);
                 setTodoList(todoList);
                 setProgressList(progressList);
                 setOnHoldList(onHoldList);
                 setCompletedList(completedList);
-                console.log("Fetched")
-            } else {
-                console.log("User is not found")
             }
         } catch (error) {
-            console.error(error)
+            console.error("Error fetching tasks:", error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false)
-    }
+    };
+
+    const [, drop] = useDrop({
+        accept: 'TASK_ITEM',
+        drop: async (item: { task: TaskClass, preStatus: number }) => {
+            const { task: droppedTask } = item;
+            await removeTaskFromServer(droppedTask)
+            setAnItemIsDragging(false)
+        },
+        collect: (monitor) => ({
+            isOver: !!monitor.isOver(),
+        }),
+    });
 
     useEffect(() => {
         fetchTasks()
@@ -206,30 +230,46 @@ const TaskBoard: React.FC<Props> = ({ }) => {
 
     return (
         <Box display='flex' flexDirection="column" gap={3}>
-            <Box display='flex' flexDirection="row" justifyContent="space-between">
-                <Typography variant="h4">Board</Typography>
+    
+            <Delete
+                ref={drop}
+                sx={{
+                    color: priorityPalette[4],
+                    visibility: anItemIsDragging ? 'visible' : 'hidden',
+                    position: 'fixed',
+                    bottom: 0,
+                    left: '50%',
+                    fontSize: '8rem',
+                    zIndex: 9999,
+                    transition: 'bottom 0.125s ease-in-out',
+                    transform: 'translateX(-50%)',
+                }}
+            />
+
+
+            <Box display='flex' flexDirection="row" alignItems='center' justifyContent="space-between">
+                <Box display='flex' flexDirection="row" alignItems='center'>
+                    <Typography variant="h4">Board</Typography>
+                </Box>
                 <Box>
                     <Button sx={{ background: myPalette[400], color: myPalette[50] }} onClick={handleCreate}>
                         Create
                     </Button>
-                    <IconButton>
-                        <MoreHorizOutlined />
-                    </IconButton>
                 </Box>
+
             </Box>
-            <TaskSearchBar setSearchQuery={setSearchQuery} />
             <Grid container spacing={2}>
                 {/* To Do */}
-                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="todo" handleAddTask={handleAddTask} hidden={hiddenStates['todo']} handleHiddenStates={handleHiddenStates} title={"TO DO"} list={todoList} preStatus={0} />
+                <TaskContainer setAnItemIsDragging={setAnItemIsDragging} handleRemoveTask={handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="todo" handleAddTask={handleAddTask} hidden={hiddenStates['todo']} handleHiddenStates={handleHiddenStates} title={"TO DO"} list={todoList} preStatus={0} />
 
                 {/* In Progress */}
-                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="progress" handleAddTask={handleAddTask} hidden={hiddenStates['progress']} handleHiddenStates={handleHiddenStates} title={"IN PROGRESS"} list={progressList} preStatus={1} />
+                <TaskContainer setAnItemIsDragging={setAnItemIsDragging} handleRemoveTask={handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="progress" handleAddTask={handleAddTask} hidden={hiddenStates['progress']} handleHiddenStates={handleHiddenStates} title={"IN PROGRESS"} list={progressList} preStatus={1} />
 
                 {/* On Hold */}
-                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="onHold" handleAddTask={handleAddTask} hidden={hiddenStates['onHold']} handleHiddenStates={handleHiddenStates} title={"ON HOLD"} list={onHoldList} preStatus={2} />
+                <TaskContainer setAnItemIsDragging={setAnItemIsDragging} handleRemoveTask={handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="onHold" handleAddTask={handleAddTask} hidden={hiddenStates['onHold']} handleHiddenStates={handleHiddenStates} title={"ON HOLD"} list={onHoldList} preStatus={2} />
 
                 {/* Completed */}
-                <TaskContainer handleRemoveTask = {handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="completed" handleAddTask={handleAddTask} hidden={hiddenStates['completed']} handleHiddenStates={handleHiddenStates} title={" COMPLETED"} list={completedList} preStatus={3} />
+                <TaskContainer setAnItemIsDragging={setAnItemIsDragging} handleRemoveTask={handleRemoveTask} loading={loading} updateDeletedTaskLists={updateDeletedTaskLists} id="completed" handleAddTask={handleAddTask} hidden={hiddenStates['completed']} handleHiddenStates={handleHiddenStates} title={" COMPLETED"} list={completedList} preStatus={3} />
             </Grid>
             <TaskCreationDialog handleClose={handleCloseDialog} open={dialogOpen} updateTaskLists={handleAddTask} />
         </Box>

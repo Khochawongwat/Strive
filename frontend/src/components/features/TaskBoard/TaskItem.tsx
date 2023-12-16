@@ -1,16 +1,16 @@
-import { Alert, Box, Card, CircularProgress, Snackbar, SnackbarOrigin, Typography } from "@mui/material";
-import { myPalette } from '../../../theme';
-import { CheckCircleOutline, DragIndicatorOutlined } from "@mui/icons-material";
+import { Alert, Box, Card, CircularProgress, LinearProgress, Snackbar, SnackbarOrigin, Typography } from "@mui/material";
+import { myPalette, priorityPalette } from '../../../theme';
+import { ArrowBackIosNew, CheckCircleOutline, CompareArrowsOutlined, DragIndicatorOutlined, KeyboardArrowDown, KeyboardArrowDownOutlined, KeyboardArrowUpOutlined, KeyboardDoubleArrowDownOutlined, KeyboardDoubleArrowUpOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import TaskInfoDialog from "../../commons/Dialogs/TaskInfoDialog";
 import { useSpring, animated } from 'react-spring';
 import { Task, TaskClass } from "../../../schema/Task.schema";
-import TaskTagsComponent from "./TaskTagsComponent";
 import axios from "axios";
 import { TASKS_ENDPOINTS } from "../../../utils/endpoints";
 import { useDrag } from "react-dnd";
 interface Props {
     task: TaskClass;
+    setAnItemIsDragging: (isDragging: boolean) => void
 }
 interface State extends SnackbarOrigin {
     openSnack: boolean
@@ -18,7 +18,7 @@ interface State extends SnackbarOrigin {
 }
 
 
-const TaskItem: React.FC<Props> = ({ task}) => {
+const TaskItem: React.FC<Props> = ({ task, setAnItemIsDragging}) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [progress, setProgress] = useState(0)
     const [subtasks, setSubtasks] = useState<TaskClass[]>([])
@@ -28,14 +28,40 @@ const TaskItem: React.FC<Props> = ({ task}) => {
         vertical: 'top',
         horizontal: 'center',
     })
+
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK_ITEM',
-        item: { task: task, preStatus: task.status },
+        item: {
+            task: {
+                ...task,
+                subtasks: subtasks
+            }, preStatus: task.status
+        },
         collect: (monitor) => ({
             isDragging: !!monitor.isDragging(),
         }),
     });
+    useEffect(() => {
+        setAnItemIsDragging(isDragging)
+    }, [isDragging])
     const { vertical, horizontal, openSnack, message } = snackState
+
+    const getPriorityColor = (priority: number) => {
+        switch (priority) {
+            case 0:
+                return priorityPalette[0]; // color for priority 0
+            case 1:
+                return priorityPalette[1];
+            case 2:
+                return priorityPalette[2];
+            case 3:
+                return priorityPalette[3];
+            case 4:
+                return priorityPalette[4];
+            default:
+                return myPalette[952]; // default color
+        }
+    }
 
     const handleSnackOpen = (message: String) => {
         setSnackState({ ...snackState, openSnack: true, message: message })
@@ -73,7 +99,22 @@ const TaskItem: React.FC<Props> = ({ task}) => {
     const slideAnimation = useSpring({
         transform: dialogOpen ? 'translateY(-12.5%)' : 'translateY(0%)',
     });
-
+    const getPriorityIcon = (priority: number) => {
+        switch (priority) {
+            case 0:
+                return <KeyboardDoubleArrowDownOutlined sx={{ color: getPriorityColor(priority) }} />;
+            case 1:
+                return <KeyboardArrowDownOutlined sx={{ color: getPriorityColor(priority) }} />;
+            case 2:
+                return <Box sx={{ color: getPriorityColor(priority) }} />;
+            case 3:
+                return <KeyboardArrowUpOutlined sx={{ color: getPriorityColor(priority) }} />;
+            case 4:
+                return <KeyboardDoubleArrowUpOutlined sx={{ color: getPriorityColor(priority) }} />;
+            default:
+                return <KeyboardDoubleArrowDownOutlined sx={{ color: getPriorityColor(priority) }} />;
+        }
+    }
     useEffect(() => {
         if (task.subtasks) {
             setSubtasks(task.subtasks)
@@ -147,10 +188,18 @@ const TaskItem: React.FC<Props> = ({ task}) => {
                             </Typography>
                             <DragIndicatorOutlined sx={{ fontSize: '18px', color: myPalette[975] }} />
                         </Box>
-                        <TaskTagsComponent tags={task.tags} />
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            {progress === 100 ? <CheckCircleOutline color={progress === 100 ? "success" : "primary"} /> : <CircularProgress style={{ width: '24px', height: '24px' }} value={progress} variant="determinate" color={progress === 100 ? "success" : "primary"} />}
-                            {subtasks.length > 0 && <Typography sx={{ fontSize: '12px' }}>{`${subtasks.filter((subtask) => subtask.status === 3).length}/${subtasks.length}`}</Typography>}
+                        <Box sx={{ display: 'flex', gap: 1, pr: 2, alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row', gap: 1 }}>
+                                {task.subtasks && task.subtasks.length > 0 && <CircularProgress
+                                    style={{ width: '24px', height: '24px', position: 'absolute' }}
+                                    value={progress}
+                                    variant="determinate"
+                                    sx={{
+                                        color:"success"
+                                    }}
+                                />}
+                            </Box>
+                            {getPriorityIcon(task.priority)}
                         </Box>
                         <TaskInfoDialog handleSnackOpen={handleSnackOpen} setSubtasks={setSubtasks} subtasks={subtasks} handleUpdateSubtask={handleUpdateSubtask} handleClose={handleCloseDialog} open={dialogOpen} task={task} />
                     </Card>
