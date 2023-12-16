@@ -153,10 +153,9 @@ const PomoBoard: React.FC<Props> = ({ timer, timeStates }) => {
               </IconButton>
               <IconButton onClick={removeTime}>
                 <KeyboardDoubleArrowLeft />
-              </IconButton>
-              {
+              </IconButton>{
                 timeStates.done ? (
-                  <IconButton>
+                  <IconButton onClick={()=>timer.resetSession()}>
                     <StopCircleOutlined />
                   </IconButton>
                 ) : (

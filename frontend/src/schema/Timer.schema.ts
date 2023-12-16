@@ -10,6 +10,9 @@ class Timer {
     public shortsNeeded: number
     public loopsNeeded: number
     public completedLoops: number
+    private defaultShortsNeeded: number
+    private defaultLoopsNeeded: number
+
     private callbacks: {
         onStart?: () => void;
         onTick?: (time: number) => void;
@@ -27,9 +30,11 @@ class Timer {
         this.isPomo = true;
         this.callbacks = {};
         this.autoStart = false;
+        this.defaultShortsNeeded = 3;
         this.completedShorts = 0;
-        this.shortsNeeded = 3;
-        this.loopsNeeded = 4;
+        this.shortsNeeded = this.defaultShortsNeeded;
+        this.defaultLoopsNeeded = 4;
+        this.loopsNeeded = this.defaultLoopsNeeded;
         this.completedLoops = 0;
     }
 
@@ -52,7 +57,7 @@ class Timer {
         this.status = newStatus;
         this.time = this.sessionDurations[this.status];
 
-        if(this.completedLoops === this.loopsNeeded){
+        if (this.completedLoops === this.loopsNeeded) {
             this.completedLoops = 0
         }
 
@@ -79,8 +84,8 @@ class Timer {
         this.status = 0;
         this.timer = null;
         this.completedShorts = 0;
-        this.shortsNeeded = 3;
-        this.loopsNeeded = 4;
+        this.shortsNeeded = this.shortsNeeded;
+        this.loopsNeeded = this.loopsNeeded;
         this.completedLoops = 0;
     }
 
@@ -95,6 +100,10 @@ class Timer {
         if (this.callbacks.onReset) this.callbacks.onReset();
     }
 
+    default(): void {
+        this.loopsNeeded = this.defaultLoopsNeeded;
+        this.shortsNeeded = this.defaultShortsNeeded;
+    }
     completeSession(): void {
         if (this.timer) clearInterval(this.timer);
         this.timerIsRunning = false;
@@ -115,12 +124,20 @@ class Timer {
                 this.completedShorts = 0;
             } else if (this.status === 0 && this.completedShorts < this.shortsNeeded) {
                 console.log("Status set to 1 after completing pomodoro session.");
-                this.status = 1; 
+                this.status = 1;
             }
             if (this.completedLoops < this.loopsNeeded) {
                 this.time = this.sessionDurations[this.status];
             }
-            if (this.callbacks.onTick) this.callbacks.onTick(this.time);
+
+            if(this.autoStart) {
+                console.log("Auto start is on. Starting next session.")
+                this.start();
+            }
+
+            if (this.callbacks.onTick) {
+                this.callbacks.onTick(this.time)
+            };
         } else {
             if (this.loopsNeeded === this.completedLoops) {
                 console.log("All loops completed. Timer completed!");
@@ -131,12 +148,12 @@ class Timer {
     }
 
     isSessionDone(): boolean {
-        return this.completedLoops === this.loopsNeeded
+        return this.completedLoops >= this.loopsNeeded
     }
 
     addOneMinute(): void {
         this.time += 60;
-        if(this.loopsNeeded === this.completedLoops){
+        if (this.loopsNeeded === this.completedLoops) {
             this.completedLoops -= 1
         }
         if (this.time > this.sessionDurations[this.status]) {
@@ -167,15 +184,13 @@ class Timer {
 
     tick(): void {
         if (this.timerIsRunning) {
-            if (this.isPomo && this.time <= 0) {
+            if (this.time <= 0) {
                 this.completeSession();
+                console.log("Session completed!");
                 return
             }
-            if (this.isPomo) {
-                this.time = this.time - 1;
-            } else {
-                this.time = this.time + 1;
-            }
+
+            this.time = this.time - 1;
             if (this.callbacks.onTick) {
                 this.callbacks.onTick(this.time);
             }

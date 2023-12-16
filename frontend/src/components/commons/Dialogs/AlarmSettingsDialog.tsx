@@ -12,16 +12,18 @@ interface Props {
 const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open, timer }) => {
     const [editedLoops, setEditedLoops] = useState(timer.loopsNeeded);
     const [editedShorts, setEditedShorts] = useState(timer.shortsNeeded);
+    const [editedAutoStart, setEditedAutoStart] = useState<boolean>(timer.autoStart);
 
     const handleSaveChanges = () => {
         timer.loopsNeeded = editedLoops;
         timer.shortsNeeded = editedShorts;
-        console.log("Saved")
+        timer.autoStart = editedAutoStart;
+        console.log("Saved", timer.autoStart)
     }
 
     useEffect(() => {
         handleSaveChanges()
-    }, [editedLoops, editedShorts])
+    }, [editedLoops, editedShorts, editedAutoStart, timer])
 
     return (
         <Dialog
@@ -77,7 +79,10 @@ const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open, timer }) => {
                         Auto Start Breaks
                     </DialogContentText>
 
-                    <Switch defaultChecked />
+                    <Switch
+                        checked={editedAutoStart}
+                        onChange={(e) => setEditedAutoStart(e.target.checked)}
+                    />
                 </Box>
                 <Box
                     sx={{
@@ -121,8 +126,9 @@ const AlarmSettingsDialog: React.FC<Props> = ({ handleClose, open, timer }) => {
                     }}
                 >
                     <Button onClick={() => {
-                        setEditedLoops(4)
-                        setEditedShorts(3)
+                        timer.default()
+                        setEditedLoops(timer.loopsNeeded)
+                        setEditedShorts(timer.shortsNeeded)
                     }}>
                         Reset to default
                     </Button>
